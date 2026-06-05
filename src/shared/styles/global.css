@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  background: #08111f;
+  color: #e7eefb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(110, 231, 249, 0.14), transparent 30rem),
+    radial-gradient(circle at 82% 12%, rgba(155, 140, 255, 0.13), transparent 28rem),
+    #08111f;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.light {
+  color-scheme: light;
+}
+
+.light body,
+.light #root {
+  background: #f6f8fc;
+  color: #101828;
+}
+
+.react-flow__node {
+  border-radius: 8px;
+  border: 1px solid #2a3954;
+  background: #121e31;
+  color: #e7eefb;
+  font-size: 12px;
+  padding: 8px 10px;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.22);
+}
