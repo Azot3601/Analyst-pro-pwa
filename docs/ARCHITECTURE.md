@@ -22,6 +22,7 @@ public/
 - Состояние UI хранится в Zustand.
 - Прогресс, подсказки, избранное и decision log сохраняются в IndexedDB через Dexie.
 - SQL-тренажёр поднимает in-browser sql.js базу из локальных схем и сидов.
+- SQL Quest Mode использует отдельную модель `src/data/sqlQuest.ts`, обучающую диагностику `src/shared/lib/sqlDiagnostics.ts` и SQL-progress namespace внутри `UserProgress.sqlQuest`.
 - PWA service worker кеширует app shell, статику и wasm-ассеты.
 
 ## Runtime

@@ -43,12 +43,13 @@ async function runScenario(browser, viewport, label) {
 
   await page.goto(`http://127.0.0.1:${port}/trainer`, { waitUntil: 'domcontentloaded' });
   let text = await page.locator('body').innerText();
-  assertText(text, 'SQL-квест', `${label} trainer`);
+  assertText(text, 'SQL Quest Mode', `${label} trainer`);
   assertText(text, 'Данные для этого шага', `${label} trainer`);
-  assertText(text, 'Шаг 1. Прочитать таблицу заказов', `${label} trainer`);
+  assertText(text, 'Открыть книгу заказов', `${label} trainer`);
   await page.getByText('Открыть подсказку').click();
+  await page.waitForFunction("document.body.innerText.includes('Подсказка 1')", null, { timeout: 10_000 });
   text = await page.locator('body').innerText();
-  assertText(text, 'Подсказка 2', `${label} hint`);
+  assertText(text, 'Подсказка 1', `${label} hint`);
   await page.getByText('Запустить и проверить').click();
   await page.waitForFunction(
     "document.body.innerText.includes('Результат совпадает с эталоном') || document.body.innerText.includes('SQL не выполнен')",
@@ -57,7 +58,15 @@ async function runScenario(browser, viewport, label) {
   );
   text = await page.locator('body').innerText();
   assertText(text, 'Результат совпадает с эталоном', `${label} sql execution`);
-  assertText(text, '1005', `${label} sql result table`);
+  assertText(text, '1003', `${label} sql result table`);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  text = await page.locator('body').innerText();
+  assertText(text, '40', `${label} sql progress after reload`);
+
+  await page.goto(`http://127.0.0.1:${port}/progress`, { waitUntil: 'domcontentloaded' });
+  text = await page.locator('body').innerText();
+  assertText(text, 'XP в SQL Quest', `${label} progress page`);
+  assertText(text, 'Открыть книгу заказов', `${label} progress recent lesson`);
 
   await page.goto(`http://127.0.0.1:${port}/toolkit`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: 'Выполнить локально' }).click();

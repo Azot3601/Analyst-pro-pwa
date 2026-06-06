@@ -105,6 +105,20 @@ export const userProgressSchema = z.object({
   weakZones: z.array(z.string()),
   streak: z.number().int().nonnegative(),
   notes: z.record(z.string(), z.string()),
+  sqlQuest: z
+    .object({
+      solvedSqlLessonIds: z.array(z.string()),
+      xp: z.number().int().nonnegative(),
+      level: z.number().int().positive(),
+      rankId: z.string(),
+      unlockedRankIds: z.array(z.string()),
+      attemptsByLessonId: z.record(z.string(), z.number().int().nonnegative()),
+      revealedHintsByLessonId: z.record(z.string(), z.array(z.string())),
+      currentChapterId: z.string(),
+      lastSqlLessonId: z.string().optional(),
+      recentlySolvedLessonIds: z.array(z.string())
+    })
+    .optional(),
   updatedAt: z.string()
 });
 

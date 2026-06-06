@@ -113,3 +113,36 @@ Remaining Backlog:
 - Run `npm audit --audit-level=moderate` in a network-enabled environment.
 - Add offline/PWA security tests when auth or remote sync appears.
 - Re-run Data Security Agent before first commit/publish and whenever env/auth/external APIs are introduced.
+
+## 2026-06-05 — SQL Quest Mode Review
+
+Status: completed.
+
+Subagents:
+
+- SQL/Curriculum/System Analyst Mentor Agent: completed.
+- Data Security/QA Agent: completed.
+
+Key Findings:
+
+- Старый SQL-тренажёр был линейным и не имел модели 8 глав / 24 задач / `trial` и `case`.
+- Прогресс SQL был page-state, а не IndexedDB.
+- XP-once, attempts и persisted hints отсутствовали.
+- Диагностика SQL mismatch была слишком общей.
+- Старые `starterSql` фактически являются готовыми решениями; для строгого режима нужен отдельный `solutionSql`.
+
+Actions Taken:
+
+- Добавлен `src/data/sqlQuest.ts` с 8 главами и 24 SQL-задачами.
+- Добавлен SQL Quest progress namespace в Dexie `UserProgress.sqlQuest`.
+- Реализованы attempts, hints, solved ids, XP-once, ranks, current/last lesson.
+- Обновлены `TrainerPage` и `ProgressPage`.
+- Добавлен `src/shared/lib/sqlDiagnostics.ts`.
+- Добавлены SQL knowledge nodes и links.
+- Добавлены unit/component/e2e проверки для SQL Quest прогресса и диагностики.
+
+Remaining Backlog:
+
+- Разделить `starterSql` и `solutionSql`.
+- Добавить rules-based диагностику текста запроса.
+- Добавить браузерную проверку offline/PWA для IndexedDB progress.

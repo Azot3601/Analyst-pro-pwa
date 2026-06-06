@@ -17,6 +17,8 @@
 
 - sql.js, локальная база, ERD, editor, runner, checker.
 - Задачи уровней 1-5.
+- SQL Quest Mode: 8 глав, 24 задачи, пути `trial`/`case`, XP/ranks, Dexie-прогресс, диагностические ошибки.
+- Следующий refinement: разделить `starterSql` и `solutionSql`, добавить rules-based диагностику текста запроса.
 
 ## Этап 4. JSON и REST/API
 

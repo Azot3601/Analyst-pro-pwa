@@ -29,11 +29,14 @@
 - 2026-06-05: создана рабочая система subagents: root `AGENTS.md`, роль-файлы в `agents/`, журнал `docs/AGENT_REVIEW_LOG.md`.
 - 2026-06-05: реальные subagents запущены через `multi_agent_v1`; отчёты получены по SQL/Curriculum, Product/UI, QA/PWA, Documentation/Knowledge/Toolkit.
 - 2026-06-05: по результатам subagent review исправлен SQL CTE-урок, добавлен урок по оконным функциям, расширены SQL-тесты, e2e теперь запускает SQL, Toolkit сбрасывает output при смене инструмента, приоритетные knowledge nodes получили кураторские тексты.
+- 2026-06-05: SQL-тренажёр переведён в SQL Quest Mode: 8 глав, 24 задачи, пути `trial`/`case`, ранги, XP, блокировки prerequisites, Dexie-прогресс, обучающая диагностика SQL-ошибок и обновлённая ProgressPage.
+- 2026-06-05: добавлены точные SQL knowledge nodes: `sql-select-from`, `sql-where-filter`, `sql-join-relations`, `sql-left-join`, `sql-group-by`, `sql-having`, `sql-case-when`, `sql-subquery`, `sql-cte`, `sql-window-functions`.
 
 ## Что осталось
 
-- Расширить SQL-квест дальше: cohort/funnel-lite, качество миграций, сверка API и БД, диагностика просадки конверсии.
-- Перенести прохождение SQL-уроков из локального state в IndexedDB-прогресс.
+- Разделить `starterSql` и `solutionSql`, чтобы пользователь начинал большинство задач с заготовки, а не с готового запроса.
+- Расширить SQL Quest диагностическими правилами по тексту запроса: forbidden `SELECT *`, required join key, required join type, alias check, hardcode detection.
+- Расширить SQL-квест дальше: качество миграций, сверка API и БД, диагностика просадки конверсии.
 - Поддерживать `scripts/e2e-smoke.mjs` как стабильный e2e smoke-runner для Windows-среды.
 - Удалить временный `test-results` после установки разрешений/очистки workspace; автоматическое удаление было отклонено политикой доступа.
 
@@ -52,3 +55,4 @@
 - Реализованы рабочие экраны приложения и локальные утилиты без runtime LLM/API.
 - SQL-раздел получил учебную механику с последовательным усложнением, визуальной базой данных и контекстом задач.
 - Subagents стали реальной частью процесса: role prompts лежат в `agents/`, результаты ревью записываются в `docs/AGENT_REVIEW_LOG.md`.
+- SQL Quest Mode стал центральным режимом SQL: главы, пути, XP/ranks, persistent progress, блокировки, диагностика ошибок и knowledge links.

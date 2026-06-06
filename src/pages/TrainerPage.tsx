@@ -2,23 +2,49 @@ import { json } from '@codemirror/lang-json';
 import { sql } from '@codemirror/lang-sql';
 import CodeMirror from '@uiw/react-codemirror';
 import {
-  BookOpen,
   Check,
   ChevronDown,
   Database,
+  Flame,
   Layers,
+  Lock,
   PlayCircle,
+  ScrollText,
   Send,
+  ShieldAlert,
+  Sparkles,
   Table2,
   Target,
   Trophy
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { sqlLessons, type SqlLesson } from '../data/sqlCourse';
+import { Link } from 'react-router-dom';
+import {
+  getNextRankForXp,
+  getRankForXp,
+  getSqlQuestChapter,
+  isSqlQuestLessonUnlocked,
+  sqlQuestChapters,
+  sqlQuestLessons,
+  type SqlQuestLesson,
+  type SqlQuestPathType
+} from '../data/sqlQuest';
 import { sqlTablePreviews, type SqlTablePreview } from '../data/sqlSeed';
 import { tasks } from '../data/tasks';
+import {
+  defaultProgress,
+  defaultSqlQuestProgress,
+  getProgress,
+  recordSqlQuestAttempt,
+  revealSqlQuestHint,
+  setSqlQuestLocation,
+  solveSqlQuestLesson,
+  type SqlQuestProgress
+} from '../features/progress/progressDb';
 import { runSql } from '../features/trainer/useSqlRunner';
+import type { UserProgress } from '../entities/schemas';
 import { simulateApiRequest } from '../shared/lib/apiSimulator';
+import { createSqlDiagnostic, type SqlDiagnostic } from '../shared/lib/sqlDiagnostics';
 import { formatJson, validateJsonSchema } from '../shared/lib/jsonTools';
 import { compareSqlRows, type SqlRow } from '../shared/lib/sqlChecker';
 import { Button } from '../shared/ui/Button';
@@ -26,12 +52,29 @@ import { Panel } from '../shared/ui/Panel';
 
 type CheckState = 'idle' | 'success' | 'error';
 
+type SqlFeedback = {
+  state: CheckState;
+  message: string;
+  diagnostic?: SqlDiagnostic;
+  xpAwarded?: number;
+};
+
 const domainLabels: Record<string, string> = {
-  sql: 'SQL',
+  sql: 'SQL Quest',
   rest: 'REST API',
   json: 'JSON',
   openapi: 'OpenAPI',
   integration: 'Интеграции'
+};
+
+const pathLabels: Record<SqlQuestPathType, string> = {
+  trial: 'Путь Испытания',
+  case: 'Путь Дела'
+};
+
+const pathDescriptions: Record<SqlQuestPathType, string> = {
+  trial: 'Точность синтаксиса и чистый SQL-приём.',
+  case: 'Контекст, риск неверной трактовки и смысл запроса.'
 };
 
 function DataTable({ columns, rows }: { columns: string[]; rows: SqlRow[] }) {
@@ -74,55 +117,149 @@ function TablePreview({ table }: { table: SqlTablePreview }) {
           </div>
           <p className="mt-1 text-xs leading-5 text-slate-400">{table.description}</p>
         </div>
-        <span className="rounded-md bg-white/10 px-2 py-1 text-xs text-slate-400">
-          {table.rows.length} строк
-        </span>
+        <span className="rounded-md bg-white/10 px-2 py-1 text-xs text-slate-400">{table.rows.length} строк</span>
       </div>
       <DataTable columns={table.columns} rows={table.rows as SqlRow[]} />
     </div>
   );
 }
 
-function LessonMap({
-  currentLesson,
-  completed,
+function RankCard({ quest }: { quest: SqlQuestProgress }) {
+  const rank = getRankForXp(quest.xp);
+  const nextRank = getNextRankForXp(quest.xp);
+  const progressToNext = nextRank
+    ? Math.round(((quest.xp - rank.minXp) / (nextRank.minXp - rank.minXp)) * 100)
+    : 100;
+
+  return (
+    <div className="rounded-lg border border-amber/20 bg-amber/10 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-xs uppercase tracking-[0.16em] text-amber">Спутник архива</div>
+          <div className="mt-1 text-lg font-bold text-slate-50">{rank.title}</div>
+          <p className="mt-1 text-xs leading-5 text-slate-400">
+            XP: {quest.xp}. Уровень {quest.level}. Следующая ступень держится на точности запросов.
+          </p>
+        </div>
+        <Sparkles className="text-amber" />
+      </div>
+      <div className="mt-3 h-2 rounded-full bg-black/30">
+        <div className="h-2 rounded-full bg-amber" style={{ width: `${progressToNext}%` }} />
+      </div>
+      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+        <span>{rank.title}</span>
+        <span>{nextRank?.title ?? 'верхняя ступень'}</span>
+      </div>
+    </div>
+  );
+}
+
+function QuestLessonList({
+  quest,
+  currentLessonId,
   onSelect
 }: {
-  currentLesson: SqlLesson;
-  completed: string[];
-  onSelect: (lesson: SqlLesson) => void;
+  quest: SqlQuestProgress;
+  currentLessonId: string;
+  onSelect: (lesson: SqlQuestLesson) => void;
 }) {
   return (
-    <div className="space-y-2">
-      {sqlLessons.map((lesson, index) => {
-        const done = completed.includes(lesson.id);
-        const active = lesson.id === currentLesson.id;
+    <div className="space-y-4">
+      {sqlQuestChapters.map((chapter) => {
+        const chapterLessons = sqlQuestLessons.filter((lesson) => lesson.chapterId === chapter.id);
+        const chapterSolved = chapterLessons.filter((lesson) => quest.solvedSqlLessonIds.includes(lesson.id)).length;
+
         return (
-          <button
-            key={lesson.id}
-            onClick={() => onSelect(lesson)}
-            className={`w-full rounded-md border p-3 text-left transition ${
-              active
-                ? 'border-electric bg-electric/10 text-electric'
-                : done
-                  ? 'border-success/30 bg-success/10 text-success'
-                  : 'border-white/10 bg-white/[0.03] text-slate-300 hover:bg-white/[0.07]'
-            }`}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-semibold">{lesson.title}</span>
-              <span className="rounded bg-white/10 px-2 py-0.5 text-[11px]">#{index + 1}</span>
+          <div key={chapter.id} className="rounded-lg border border-white/10 bg-white/[0.025] p-3">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <div className="text-xs uppercase tracking-[0.16em] text-electric">Глава {chapter.order}</div>
+                <div className="mt-1 text-sm font-semibold text-slate-100">{chapter.title}</div>
+                <p className="mt-1 text-xs leading-5 text-slate-400">{chapter.subtitle}</p>
+              </div>
+              <span className="rounded-md bg-white/10 px-2 py-1 text-[11px] text-slate-300">
+                {chapterSolved}/{chapterLessons.length}
+              </span>
             </div>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {lesson.focus.slice(0, 3).map((skill) => (
-                <span key={skill} className="rounded bg-black/20 px-1.5 py-0.5 text-[11px] text-slate-400">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </button>
+
+            {(['trial', 'case'] as SqlQuestPathType[]).map((pathType) => (
+              <div key={pathType} className="mb-3 last:mb-0">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  {pathLabels[pathType]}
+                </div>
+                <div className="space-y-2">
+                  {chapterLessons
+                    .filter((lesson) => lesson.pathType === pathType)
+                    .map((lesson) => {
+                      const solved = quest.solvedSqlLessonIds.includes(lesson.id);
+                      const locked = !isSqlQuestLessonUnlocked(lesson, quest.solvedSqlLessonIds);
+                      const active = lesson.id === currentLessonId;
+
+                      return (
+                        <button
+                          key={lesson.id}
+                          onClick={() => onSelect(lesson)}
+                          className={`w-full rounded-md border p-3 text-left transition ${
+                            active
+                              ? 'border-electric bg-electric/10 text-electric'
+                              : solved
+                                ? 'border-success/30 bg-success/10 text-success'
+                                : locked
+                                  ? 'border-white/10 bg-black/20 text-slate-500'
+                                  : 'border-white/10 bg-white/[0.03] text-slate-300 hover:bg-white/[0.07]'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="text-sm font-semibold">{lesson.title}</span>
+                            {locked ? <Lock size={14} /> : solved ? <Check size={14} /> : <span className="text-[11px]">{lesson.xp} XP</span>}
+                          </div>
+                          <div className="mt-2 text-xs leading-5 text-slate-400">{lesson.sqlConcept}</div>
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+            ))}
+          </div>
         );
       })}
+    </div>
+  );
+}
+
+function DiagnosticBlock({ diagnostic, lesson }: { diagnostic: SqlDiagnostic; lesson: SqlQuestLesson }) {
+  return (
+    <div className="space-y-3 rounded-lg border border-danger/25 bg-danger/10 p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold text-danger">
+        <ShieldAlert size={16} />
+        Диагностика запроса
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-md bg-black/20 p-3 text-sm text-slate-300">
+          Ожидалось строк: <span className="font-semibold text-slate-50">{diagnostic.expectedRowCount}</span>
+        </div>
+        <div className="rounded-md bg-black/20 p-3 text-sm text-slate-300">
+          Получено строк: <span className="font-semibold text-slate-50">{diagnostic.actualRowCount}</span>
+        </div>
+      </div>
+      {(diagnostic.missingColumns.length > 0 || diagnostic.extraColumns.length > 0) && (
+        <div className="rounded-md bg-black/20 p-3 text-sm leading-6 text-slate-300">
+          {diagnostic.missingColumns.length > 0 && <div>Не хватает колонок: {diagnostic.missingColumns.join(', ')}</div>}
+          {diagnostic.extraColumns.length > 0 && <div>Лишние колонки: {diagnostic.extraColumns.join(', ')}</div>}
+        </div>
+      )}
+      <div className="rounded-md bg-black/20 p-3 text-sm leading-6 text-slate-300">
+        <div className="font-semibold text-slate-100">Вероятная причина</div>
+        <p>{diagnostic.likelyCause}</p>
+      </div>
+      <div className="rounded-md border border-amber/20 bg-amber/10 p-3 text-sm leading-6 text-slate-200">
+        <div className="font-semibold text-amber">Подсказка спутника</div>
+        <p>{diagnostic.companionHint || lesson.companionError}</p>
+        <p className="mt-2 text-slate-300">{diagnostic.softHint}</p>
+      </div>
+      <Link className="inline-flex text-sm font-semibold text-electric hover:underline" to="/knowledge">
+        Открыть связанное знание: {diagnostic.relatedKnowledgeId ?? lesson.relatedKnowledgeIds[0]}
+      </Link>
     </div>
   );
 }
@@ -132,45 +269,103 @@ export function TrainerPage() {
   const filtered = useMemo(() => tasks.filter((task) => task.domain === domain), [domain]);
   const [taskId, setTaskId] = useState('rest-task-1');
   const task = tasks.find((item) => item.id === taskId) ?? filtered[0] ?? tasks[0];
-  const [lessonId, setLessonId] = useState(sqlLessons[0].id);
-  const lesson = sqlLessons.find((item) => item.id === lessonId) ?? sqlLessons[0];
+  const [progress, setProgress] = useState<UserProgress>(defaultProgress);
+  const quest = progress.sqlQuest ?? defaultSqlQuestProgress;
+  const [lessonId, setLessonId] = useState(quest.lastSqlLessonId ?? sqlQuestLessons[0].id);
+  const lesson = sqlQuestLessons.find((item) => item.id === lessonId) ?? sqlQuestLessons[0];
+  const chapter = getSqlQuestChapter(lesson.chapterId);
   const [sqlValue, setSqlValue] = useState(lesson.starterSql);
   const [jsonValue, setJsonValue] = useState('{"orderId":"ord-1001","status":"paid","delivery":null}');
-  const [resultText, setResultText] = useState<string>('Запустите запрос, чтобы увидеть результат.');
+  const [feedback, setFeedback] = useState<SqlFeedback>({
+    state: 'idle',
+    message: 'Запустите запрос, чтобы увидеть результат.'
+  });
   const [resultRows, setResultRows] = useState<SqlRow[]>([]);
-  const [checkState, setCheckState] = useState<CheckState>('idle');
-  const [openHints, setOpenHints] = useState(1);
   const [selectedTable, setSelectedTable] = useState(sqlTablePreviews[1].name);
-  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+
+  useEffect(() => {
+    getProgress()
+      .then((saved) => {
+        setProgress(saved);
+        const savedLessonId = saved.sqlQuest?.lastSqlLessonId ?? sqlQuestLessons[0].id;
+        setLessonId(savedLessonId);
+      })
+      .catch(() => setProgress(defaultProgress));
+  }, []);
 
   useEffect(() => {
     setSqlValue(lesson.starterSql);
-    setResultText('Запустите запрос, чтобы увидеть результат.');
+    setFeedback({ state: 'idle', message: 'Запустите запрос, чтобы увидеть результат.' });
     setResultRows([]);
-    setCheckState('idle');
-    setOpenHints(1);
     setSelectedTable(lesson.tablesUsed[0] ?? sqlTablePreviews[0].name);
-  }, [lesson.id, lesson.starterSql, lesson.tablesUsed]);
+    void setSqlQuestLocation(lesson.chapterId, lesson.id).catch(() => undefined);
+  }, [lesson.id, lesson.chapterId, lesson.starterSql, lesson.tablesUsed]);
 
-  const progressPercent = Math.round((completedLessons.length / sqlLessons.length) * 100);
+  const progressPercent = Math.round((quest.solvedSqlLessonIds.length / sqlQuestLessons.length) * 100);
   const activeTable = sqlTablePreviews.find((table) => table.name === selectedTable) ?? sqlTablePreviews[0];
   const resultColumns = resultRows.length ? Object.keys(resultRows[0]) : [];
+  const unlocked = isSqlQuestLessonUnlocked(lesson, quest.solvedSqlLessonIds);
+  const revealedHintIds = quest.revealedHintsByLessonId[lesson.id] ?? [];
+  const revealedHints = lesson.hints.filter((_, index) => revealedHintIds.includes(String(index)));
+  const rank = getRankForXp(quest.xp);
+
+  const refreshProgress = async () => setProgress(await getProgress());
 
   const handleRun = async () => {
     if (domain === 'sql') {
+      if (!unlocked) {
+        setFeedback({
+          state: 'error',
+          message: 'Задача пока закрыта. Сначала решите предыдущие шаги этой ветки.'
+        });
+        return;
+      }
+
       try {
+        const afterAttempt = await recordSqlQuestAttempt(lesson.id);
+        setProgress(afterAttempt);
         const rows = await runSql(sqlValue);
         const check = compareSqlRows(rows, lesson.expectedRows, lesson.orderMatters ?? false);
         setResultRows(rows);
-        setCheckState(check.ok ? 'success' : 'error');
-        setResultText(check.message);
+
         if (check.ok) {
-          setCompletedLessons((current) => Array.from(new Set([...current, lesson.id])));
+          const { progress: solvedProgress, xpAwarded } = await solveSqlQuestLesson(lesson);
+          setProgress(solvedProgress);
+          setFeedback({
+            state: 'success',
+            message:
+              xpAwarded > 0
+                ? `Результат совпадает с эталоном. Награда: +${xpAwarded} XP. ${lesson.successStory}`
+                : `Результат совпадает с эталоном. XP уже был начислен раньше. ${lesson.successStory}`,
+            xpAwarded
+          });
+        } else {
+          const diagnostic = createSqlDiagnostic({
+            actualRows: rows,
+            expectedRows: lesson.expectedRows,
+            orderMatters: lesson.orderMatters,
+            relatedKnowledgeIds: lesson.relatedKnowledgeIds,
+            companionError: lesson.companionError
+          });
+          setFeedback({
+            state: 'error',
+            message: 'Результат отличается от эталона. Ниже разбор, где именно разошлись данные.',
+            diagnostic
+          });
         }
       } catch (error) {
+        await refreshProgress().catch(() => undefined);
         setResultRows([]);
-        setCheckState('error');
-        setResultText(`SQL не выполнен: ${error instanceof Error ? error.message : 'неизвестная ошибка'}`);
+        setFeedback({
+          state: 'error',
+          message: `SQL не выполнен: ${error instanceof Error ? error.message : 'неизвестная ошибка'}`,
+          diagnostic: createSqlDiagnostic({
+            actualRows: [],
+            expectedRows: lesson.expectedRows,
+            relatedKnowledgeIds: lesson.relatedKnowledgeIds,
+            companionError: 'Запрос даже не дошёл до сверки. Сначала проверь синтаксис: запятые, кавычки и порядок секций.'
+          })
+        });
       }
       return;
     }
@@ -181,8 +376,10 @@ export function TrainerPage() {
           ? validateJsonSchema(jsonValue, JSON.stringify(task.validation.schema))
           : formatJson(jsonValue);
       setResultRows([]);
-      setCheckState(validation.ok ? 'success' : 'error');
-      setResultText(`${validation.message}\n\n${validation.details?.join('\n') ?? validation.value ?? ''}`);
+      setFeedback({
+        state: validation.ok ? 'success' : 'error',
+        message: `${validation.message}\n\n${validation.details?.join('\n') ?? validation.value ?? ''}`
+      });
       return;
     }
 
@@ -192,17 +389,26 @@ export function TrainerPage() {
       query: { status: 'paid', page: '1', size: '10' }
     });
     setResultRows([]);
-    setCheckState('success');
-    setResultText(JSON.stringify(response, null, 2));
+    setFeedback({ state: 'success', message: JSON.stringify(response, null, 2) });
+  };
+
+  const handleRevealHint = async () => {
+    const nextIndex = revealedHintIds.length;
+    if (nextIndex >= lesson.hints.length) return;
+    const saved = await revealSqlQuestHint(lesson.id, String(nextIndex));
+    setProgress(saved);
+  };
+
+  const selectLesson = (nextLesson: SqlQuestLesson) => {
+    setLessonId(nextLesson.id);
   };
 
   const selectDomain = (item: string) => {
     setDomain(item);
     const nextTask = tasks.find((taskItem) => taskItem.domain === item);
     if (nextTask) setTaskId(nextTask.id);
-    setResultText('Результат появится здесь.');
+    setFeedback({ state: 'idle', message: 'Результат появится здесь.' });
     setResultRows([]);
-    setCheckState('idle');
   };
 
   return (
@@ -226,9 +432,9 @@ export function TrainerPage() {
       </Panel>
 
       {domain === 'sql' ? (
-        <div className="grid gap-4 2xl:grid-cols-[340px_minmax(0,1fr)_430px]">
+        <div className="grid gap-4 2xl:grid-cols-[360px_minmax(0,1fr)_430px]">
           <Panel
-            title="SQL-квест"
+            title="SQL Quest Mode"
             action={
               <span className="rounded-md bg-white/10 px-2 py-1 text-xs text-slate-300">
                 {progressPercent}% пути
@@ -238,21 +444,17 @@ export function TrainerPage() {
             <div className="mb-4 rounded-lg border border-electric/20 bg-electric/10 p-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-electric">
                 <Trophy size={16} />
-                Обучение как цепочка миссий
+                SQL как путь аналитика
               </div>
               <p className="text-sm leading-6 text-slate-300">
-                Каждый шаг добавляет один новый приём. Сначала читаем таблицу, затем фильтруем,
-                сортируем, соединяем, агрегируем и ищем интеграционные разрывы.
+                Каждая задача: причина из мира данных, SQL-действие, проверяемый результат, разбор ошибки,
+                связанное знание и награда. Атмосфера помогает держать внимание, но решает всё запрос.
               </p>
               <div className="mt-3 h-2 rounded-full bg-white/10">
                 <div className="h-2 rounded-full bg-electric" style={{ width: `${progressPercent}%` }} />
               </div>
             </div>
-            <LessonMap
-              currentLesson={lesson}
-              completed={completedLessons}
-              onSelect={(nextLesson) => setLessonId(nextLesson.id)}
-            />
+            <QuestLessonList quest={quest} currentLessonId={lesson.id} onSelect={selectLesson} />
           </Panel>
 
           <div className="space-y-4">
@@ -260,26 +462,42 @@ export function TrainerPage() {
               title={lesson.title}
               action={
                 <span className="rounded-md bg-white/10 px-2 py-1 text-xs text-slate-300">
-                  Уровень {lesson.level}
+                  {pathLabels[lesson.pathType]} · {lesson.xp} XP
                 </span>
               }
             >
-              <div className="grid gap-4 xl:grid-cols-[1fr_0.85fr]">
+              <div className="mb-4 rounded-lg border border-white/10 bg-ink/60 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.16em] text-electric">
+                      Глава {chapter.order}: {chapter.title}
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-300">{chapter.description}</p>
+                  </div>
+                  {!unlocked && (
+                    <span className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-black/25 px-3 py-2 text-xs text-slate-400">
+                      <Lock size={14} /> закрыто prerequisites
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
                 <div className="space-y-4">
                   <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
                     <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-electric">
-                      <BookOpen size={16} />
-                      Что изучаем
+                      <ScrollText size={16} />
+                      Сюжетная причина
                     </div>
-                    <p className="text-sm leading-6 text-slate-300">{lesson.concept}</p>
+                    <p className="text-sm leading-6 text-slate-300">{lesson.storyIntro}</p>
                   </div>
                   <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
                     <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-amber">
                       <Target size={16} />
                       Бизнес-контекст
                     </div>
-                    <p className="text-sm leading-6 text-slate-300">{lesson.context}</p>
-                    <p className="mt-3 text-sm leading-6 text-slate-400">{lesson.analystWhy}</p>
+                    <p className="text-sm leading-6 text-slate-300">{lesson.businessContext}</p>
+                    <p className="mt-3 text-sm leading-6 text-slate-400">{lesson.learningGoal}</p>
                   </div>
                 </div>
                 <div className="rounded-lg border border-white/10 bg-ink/60 p-4">
@@ -292,12 +510,9 @@ export function TrainerPage() {
                       </li>
                     ))}
                   </ul>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {lesson.focus.map((skill) => (
-                      <span key={skill} className="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-300">
-                        {skill}
-                      </span>
-                    ))}
+                  <div className="mt-4 rounded-md border border-white/10 bg-white/[0.03] p-3 text-xs leading-5 text-slate-400">
+                    <div className="mb-1 font-semibold text-slate-200">{pathLabels[lesson.pathType]}</div>
+                    {pathDescriptions[lesson.pathType]}
                   </div>
                 </div>
               </div>
@@ -310,8 +525,7 @@ export function TrainerPage() {
                       Данные для этого шага
                     </div>
                     <p className="mt-1 text-xs text-slate-400">
-                      Смотрите на реальные строки перед тем, как писать запрос. Подсвечены таблицы,
-                      которые нужны в текущей миссии.
+                      Таблица видна до запроса: сначала смотри на реальные строки, потом формулируй SQL.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -336,20 +550,17 @@ export function TrainerPage() {
               </div>
 
               <div className="mt-5 rounded-lg border border-mentor/20 bg-mentor/10 p-4">
-                <div className="mb-2 text-sm font-semibold text-mentor">Миссия</div>
-                <p className="text-sm leading-6 text-slate-200">{lesson.task}</p>
+                <div className="mb-2 text-sm font-semibold text-mentor">SQL-действие</div>
+                <p className="text-sm leading-6 text-slate-200">{lesson.sqlConcept}</p>
               </div>
 
               <div className="mt-5">
-                <CodeMirror value={sqlValue} height="260px" extensions={[sql()]} theme="dark" onChange={setSqlValue} />
+                <CodeMirror value={sqlValue} height="280px" extensions={[sql()]} theme="dark" onChange={setSqlValue} />
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <Button onClick={handleRun}>
+                  <Button onClick={handleRun} disabled={!unlocked}>
                     <Send size={16} /> Запустить и проверить
                   </Button>
-                  <Button
-                    variant="soft"
-                    onClick={() => setOpenHints((value) => Math.min(value + 1, lesson.hints.length))}
-                  >
+                  <Button variant="soft" onClick={handleRevealHint} disabled={revealedHintIds.length >= lesson.hints.length}>
                     <ChevronDown size={16} /> Открыть подсказку
                   </Button>
                   <Button variant="ghost" onClick={() => setSqlValue(lesson.starterSql)}>
@@ -361,39 +572,53 @@ export function TrainerPage() {
 
             <div className="grid gap-4 xl:grid-cols-2">
               <Panel title="Подсказки по шагам">
-                <div className="space-y-2">
-                  {lesson.hints.slice(0, openHints).map((hint, index) => (
-                    <div key={hint} className="rounded-md border border-white/10 bg-white/[0.04] p-3">
-                      <div className="mb-1 text-sm font-semibold text-slate-100">Подсказка {index + 1}</div>
-                      <p className="text-sm leading-6 text-slate-400">{hint}</p>
-                    </div>
-                  ))}
-                </div>
+                {revealedHints.length > 0 ? (
+                  <div className="space-y-2">
+                    {revealedHints.map((hint, index) => (
+                      <div key={hint} className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+                        <div className="mb-1 text-sm font-semibold text-slate-100">Подсказка {index + 1}</div>
+                        <p className="text-sm leading-6 text-slate-400">{hint}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm leading-6 text-slate-400">
+                    Подсказки открываются постепенно и сохраняются после перезагрузки.
+                  </p>
+                )}
               </Panel>
 
               <Panel title="Результат и разбор">
                 <div
-                  className={`mb-3 rounded-md border p-3 text-sm ${
-                    checkState === 'success'
+                  className={`mb-3 rounded-md border p-3 text-sm leading-6 ${
+                    feedback.state === 'success'
                       ? 'border-success/30 bg-success/10 text-success'
-                      : checkState === 'error'
+                      : feedback.state === 'error'
                         ? 'border-danger/30 bg-danger/10 text-danger'
                         : 'border-white/10 bg-white/[0.04] text-slate-300'
                   }`}
                 >
-                  {resultText}
+                  {feedback.message}
                 </div>
-                {resultRows.length > 0 ? (
-                  <DataTable columns={resultColumns} rows={resultRows} />
-                ) : (
-                  <pre className="max-h-44 overflow-auto rounded-md bg-ink p-3 text-xs leading-5 text-slate-300">
-                    {resultText}
-                  </pre>
+                {resultRows.length > 0 && <DataTable columns={resultColumns} rows={resultRows} />}
+                {feedback.diagnostic && (
+                  <div className="mt-4">
+                    <DiagnosticBlock diagnostic={feedback.diagnostic} lesson={lesson} />
+                  </div>
                 )}
                 <div className="mt-4 rounded-md border border-white/10 bg-white/[0.03] p-3">
                   <div className="mb-2 text-sm font-semibold text-electric">Почему это важно</div>
                   <p className="text-sm leading-6 text-slate-400">{lesson.explanation}</p>
                 </div>
+                {feedback.state === 'success' && (
+                  <div className="mt-4 rounded-md border border-amber/20 bg-amber/10 p-3">
+                    <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-amber">
+                      <Flame size={16} />
+                      {rank.title}
+                    </div>
+                    <p className="text-sm leading-6 text-slate-200">{lesson.companionSuccess}</p>
+                  </div>
+                )}
                 <div className="mt-4">
                   <div className="mb-2 text-sm font-semibold text-danger">Частые ошибки</div>
                   <ul className="space-y-1 text-sm text-slate-400">
@@ -407,6 +632,8 @@ export function TrainerPage() {
           </div>
 
           <div className="space-y-4">
+            <RankCard quest={quest} />
+
             <Panel title="База данных">
               <div className="mb-4 flex flex-wrap gap-2">
                 {sqlTablePreviews.map((table) => (
@@ -435,7 +662,7 @@ export function TrainerPage() {
                     <Layers size={16} />
                     customers 1 → N orders
                   </div>
-                  <div className="mt-2 text-xs text-slate-400">`orders.customer_id` ссылается на `customers.id`</div>
+                  <div className="mt-2 text-xs text-slate-400">orders.customer_id ссылается на customers.id</div>
                 </div>
                 <div className="rounded-md border border-white/10 bg-ink p-3">
                   <div className="flex items-center gap-2 text-sm text-electric">
@@ -506,7 +733,7 @@ export function TrainerPage() {
                 Локальное выполнение
               </div>
               <pre className="max-h-64 overflow-auto rounded-md bg-ink p-3 text-xs leading-5 text-slate-300">
-                {resultText}
+                {feedback.message}
               </pre>
               <p className="mt-4 text-sm leading-6 text-slate-400">{task.explanation}</p>
             </Panel>

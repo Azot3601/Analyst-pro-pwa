@@ -63,10 +63,15 @@ const titles = [
   'Request body',
   'Response body',
   'Status codes',
+  'SELECT и FROM',
+  'WHERE-фильтрация',
   'JOIN',
+  'JOIN-связи',
   'LEFT JOIN',
   'GROUP BY',
   'HAVING',
+  'CASE WHEN',
+  'Подзапрос',
   'CTE',
   'Оконные функции',
   'Качество данных',
@@ -98,7 +103,17 @@ const slugOverrides: Record<string, string> = {
   ERD: 'erd',
   OpenAPI: 'openapi',
   'JSON Schema': 'json-schema',
+  'SELECT и FROM': 'sql-select-from',
+  'WHERE-фильтрация': 'sql-where-filter',
   JOIN: 'join',
+  'JOIN-связи': 'sql-join-relations',
+  'LEFT JOIN': 'sql-left-join',
+  'GROUP BY': 'sql-group-by',
+  HAVING: 'sql-having',
+  'CASE WHEN': 'sql-case-when',
+  Подзапрос: 'sql-subquery',
+  CTE: 'sql-cte',
+  'Оконные функции': 'sql-window-functions',
   'Качество данных': 'data-quality',
   Интеграции: 'integration',
   Идемпотентность: 'idempotency',
@@ -130,11 +145,131 @@ const curatedNodes: Record<
     examples: ['Найти paid-заказы без события доставки accepted.', 'Сверить сумму captured-платежей с суммой заказа.'],
     antiExamples: ['Писать SELECT * без понимания нужных колонок.', 'Считать SQL-ответ правильным без проверки бизнес-смысла.'],
     related: [
-      { id: 'join', relation: 'used_in' },
+      { id: 'sql-join-relations', relation: 'used_in' },
       { id: 'erd', relation: 'prerequisite' },
       { id: 'data-quality', relation: 'used_in' }
     ],
     tags: ['sql', 'данные', 'hard-skills']
+  },
+  'sql-select-from': {
+    summary: 'SELECT и FROM задают, какие поля и из какого источника нужны для ответа.',
+    fullText:
+      'Базовый SELECT важен не как формальность, а как первый аналитический разрез. Хороший запрос выбирает только нужные колонки, фиксирует источник данных через FROM и при необходимости стабилизирует обзор через ORDER BY и LIMIT.',
+    examples: ['SELECT id, status, total FROM orders ORDER BY id LIMIT 3.'],
+    antiExamples: ['Начинать расследование с SELECT * и спорить по лишним полям.'],
+    related: [
+      { id: 'sql', relation: 'prerequisite' },
+      { id: 'sql-where-filter', relation: 'used_in' }
+    ],
+    tags: ['sql', 'select', 'основа']
+  },
+  'sql-where-filter': {
+    summary: 'WHERE переводит бизнес-условие в набор строк, которые подходят под правило.',
+    fullText:
+      'Фильтрация через WHERE отделяет релевантные записи от шума. Аналитик должен явно понимать, какой статус, диапазон, шаблон или NULL-состояние отражает бизнес-смысл задачи.',
+    examples: ["WHERE status = 'paid' AND total BETWEEN 1000 AND 6000."],
+    antiExamples: ['Смешать статус заказа и статус платежа, потому что оба называются status.'],
+    related: [
+      { id: 'sql-select-from', relation: 'prerequisite' },
+      { id: 'sql-group-by', relation: 'used_in' }
+    ],
+    tags: ['sql', 'where', 'фильтрация']
+  },
+  'sql-group-by': {
+    summary: 'GROUP BY собирает строки в группы, а агрегаты превращают их в показатели.',
+    fullText:
+      'GROUP BY нужен, когда вопрос звучит как “сколько”, “на какую сумму”, “в каком регионе больше”. Важно фильтровать строки до группировки через WHERE и давать агрегатам понятные имена.',
+    examples: ['COUNT(*) AS cnt, SUM(total) AS total_sum по status или region.'],
+    antiExamples: ['Вывести неагрегированную колонку без понимания, почему она не входит в GROUP BY.'],
+    related: [
+      { id: 'sql-where-filter', relation: 'prerequisite' },
+      { id: 'sql-having', relation: 'used_in' }
+    ],
+    tags: ['sql', 'агрегации', 'метрики']
+  },
+  'sql-join-relations': {
+    summary: 'JOIN соединяет сущности по ключам модели данных, а не по похожим названиям колонок.',
+    fullText:
+      'JOIN нужен, чтобы связать заказ с клиентом, платежом или событием. Главный риск — выбрать неверную связь и получить правдоподобный, но неверный результат.',
+    examples: ['orders.customer_id соединяется с customers.id.'],
+    antiExamples: ['Соединить orders.id с customers.id только потому, что обе колонки называются id.'],
+    related: [
+      { id: 'erd', relation: 'prerequisite' },
+      { id: 'sql-left-join', relation: 'used_in' }
+    ],
+    tags: ['sql', 'join', 'модель данных']
+  },
+  'sql-left-join': {
+    summary: 'LEFT JOIN сохраняет строки слева и помогает найти отсутствующие связанные факты.',
+    fullText:
+      'LEFT JOIN особенно полезен в расследованиях: “заказ есть, а события доставки нет”, “клиент есть, а заказов нет”. После такого соединения отсутствие справа обычно проверяется через IS NULL.',
+    examples: ['Paid-заказы без delivery_events.event_type = accepted.'],
+    antiExamples: ['Использовать INNER JOIN и случайно скрыть именно те строки, где связь отсутствует.'],
+    related: [
+      { id: 'sql-join-relations', relation: 'prerequisite' },
+      { id: 'integration', relation: 'used_in' }
+    ],
+    tags: ['sql', 'left-join', 'качество данных']
+  },
+  'sql-having': {
+    summary: 'HAVING фильтрует группы после агрегации.',
+    fullText:
+      'HAVING используется, когда условие зависит от COUNT, SUM, AVG или другого агрегата. WHERE фильтрует строки до GROUP BY, HAVING — уже посчитанные группы.',
+    examples: ['HAVING COUNT(*) > 1 для поиска дублей.'],
+    antiExamples: ['Писать WHERE COUNT(*) > 1.'],
+    related: [
+      { id: 'sql-group-by', relation: 'prerequisite' },
+      { id: 'idempotency', relation: 'used_in' }
+    ],
+    tags: ['sql', 'having', 'агрегации']
+  },
+  'sql-case-when': {
+    summary: 'CASE WHEN превращает условия в понятные категории.',
+    fullText:
+      'CASE помогает аналитику перевести технические коды в бизнес-состояния: accepted, failed, missing; ok или needs_review. Это делает результат пригодным для обсуждения, отчёта или ручной очереди.',
+    examples: ['CASE WHEN event_type = accepted THEN accepted ELSE missing END.'],
+    antiExamples: ['Вернуть сырые коды без объяснения, какие действия по ним нужны.'],
+    related: [
+      { id: 'sql-left-join', relation: 'used_in' },
+      { id: 'data-quality', relation: 'used_in' }
+    ],
+    tags: ['sql', 'case', 'классификация']
+  },
+  'sql-subquery': {
+    summary: 'Подзапрос позволяет использовать результат одного SELECT внутри другого.',
+    fullText:
+      'Подзапрос полезен, когда критерий зависит от данных: выше средней суммы, входит в список captured-платежей, существует связанный факт. Он снижает риск магических чисел в запросе.',
+    examples: ['WHERE total > (SELECT AVG(total) FROM orders).'],
+    antiExamples: ['Вписать среднее вручную и забыть, что данные меняются.'],
+    related: [
+      { id: 'sql-cte', relation: 'used_in' },
+      { id: 'sql-where-filter', relation: 'prerequisite' }
+    ],
+    tags: ['sql', 'subquery', 'динамические условия']
+  },
+  'sql-cte': {
+    summary: 'CTE через WITH делает сложный запрос читаемым как последовательность шагов.',
+    fullText:
+      'CTE полезен для сверок и расследований: сначала посчитать промежуточный набор, потом соединить его с основными сущностями. Это облегчает ревью запроса и разговор с командой.',
+    examples: ['WITH captured AS (...) SELECT ... FROM orders LEFT JOIN captured ...'],
+    antiExamples: ['Спрятать всю сверку в один нечитаемый вложенный SELECT.'],
+    related: [
+      { id: 'sql-subquery', relation: 'prerequisite' },
+      { id: 'data-quality', relation: 'used_in' }
+    ],
+    tags: ['sql', 'cte', 'сверка']
+  },
+  'sql-window-functions': {
+    summary: 'Оконные функции добавляют расчёты к строкам, не схлопывая их в группы.',
+    fullText:
+      'ROW_NUMBER, RANK, LAG и SUM OVER позволяют строить рейтинги, смотреть предыдущие события и считать накопительные показатели. Это важно для воронок, динамики, когорт-lite и поиска аномалий.',
+    examples: ['ROW_NUMBER() OVER (PARTITION BY region ORDER BY total DESC).'],
+    antiExamples: ['Использовать GROUP BY, когда нужно сохранить id конкретной строки.'],
+    related: [
+      { id: 'sql-cte', relation: 'prerequisite' },
+      { id: 'sql-group-by', relation: 'contrasts_with' }
+    ],
+    tags: ['sql', 'window-functions', 'advanced']
   },
   rest: {
     summary: 'REST — стиль проектирования HTTP API вокруг ресурсов, методов и представлений.',
