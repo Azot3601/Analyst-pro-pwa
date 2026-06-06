@@ -146,3 +146,36 @@ Remaining Backlog:
 - Разделить `starterSql` и `solutionSql`.
 - Добавить rules-based диагностику текста запроса.
 - Добавить браузерную проверку offline/PWA для IndexedDB progress.
+
+## 2026-06-06 — Vercel Pre-Publish Review
+
+Status: completed.
+
+Subagents:
+
+- Data Security Agent: completed.
+- PWA Offline / QA Test Agent: completed.
+
+Key Findings:
+
+- Для Vite SPA требовался `vercel.json` с rewrite на `index.html`, иначе прямое открытие `/trainer` или `/progress` могло вернуть 404.
+- `.vercel/` должен оставаться локальным и не попадать в Git.
+- PWA manifest нуждался в PNG `192x192`, PNG `512x512` и maskable-иконке для более стабильной installability.
+- Runtime-cache следует ограничивать same-origin ресурсами.
+- `npm audit` не выполняется в текущей среде из-за заблокированного доступа к npm registry.
+
+Actions Taken:
+
+- Добавлен `vercel.json`: Vite build/output, SPA rewrite, cache headers и базовые security headers.
+- Добавлено игнорирование `.vercel/`.
+- Добавлена команда `npm run verify:deploy`.
+- PWA runtime cache ограничен `sameOrigin`.
+- Добавлены PNG PWA-иконки.
+- Добавлена инструкция `docs/DEPLOYMENT_VERCEL.md`.
+- Полный `npm run verify:deploy` прошёл.
+
+Remaining Backlog:
+
+- Выполнить `npm audit --audit-level=moderate` в среде с доступом к registry.
+- После Preview deployment проверить реальные Vercel deep links, headers, service worker и offline reload.
+- Рассмотреть code splitting: основной JS chunk остаётся крупным.

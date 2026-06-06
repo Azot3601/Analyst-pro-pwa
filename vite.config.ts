@@ -18,6 +18,24 @@ export default {
         lang: 'ru',
         icons: [
           {
+            src: '/icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
             src: '/icons/icon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
@@ -30,7 +48,8 @@ export default {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json,wasm}'],
         runtimeCaching: [
           {
-            urlPattern: ({ request }) => request.destination === 'document',
+            urlPattern: ({ request, sameOrigin }) =>
+              sameOrigin && request.destination === 'document',
             handler: 'NetworkFirst',
             options: {
               cacheName: 'analyst-pro-pages',
@@ -38,7 +57,8 @@ export default {
             }
           },
           {
-            urlPattern: ({ request }) =>
+            urlPattern: ({ request, sameOrigin }) =>
+              sameOrigin &&
               ['script', 'style', 'font', 'image'].includes(request.destination),
             handler: 'CacheFirst',
             options: {

@@ -36,6 +36,7 @@ npm run test
 npm run build
 npm run test:e2e
 npm run security:scan
+npm run verify:deploy
 ```
 
 `npm run test:e2e` использует Playwright smoke-runner и проверяет тренажёр, инструментарий и базу знаний на desktop/mobile.
@@ -43,3 +44,15 @@ npm run security:scan
 ## Документация
 
 Основная документация находится в `docs/`.
+
+## Деплой На Vercel
+
+Проект содержит `vercel.json` для Vite SPA/PWA: deep links, production build, cache headers и безопасные response headers.
+
+Перед публикацией:
+
+```bash
+npm run verify:deploy
+```
+
+Пошаговая инструкция: `docs/DEPLOYMENT_VERCEL.md`.

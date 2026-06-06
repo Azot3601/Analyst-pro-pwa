@@ -12,6 +12,7 @@ const ignoredDirs = new Set([
   'test-results',
   'playwright-report',
   '.serena',
+  '.vercel',
   '.codex',
   '.vite',
   '.cache'
@@ -115,7 +116,7 @@ function trackedIgnoredFiles() {
 
 await walk(root);
 
-['node_modules/', 'dist/', 'build/', 'coverage/', 'test-results/', 'playwright-report/', '.env', '.env.local'].forEach((item) => {
+['node_modules/', 'dist/', 'build/', 'coverage/', 'test-results/', 'playwright-report/', '.vercel/', '.env', '.env.local'].forEach((item) => {
   if (!checkIgnored(item)) {
     findings.push({ severity: 'medium', file: '.gitignore', message: `${item} is not ignored` });
   }

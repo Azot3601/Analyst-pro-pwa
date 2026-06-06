@@ -64,6 +64,9 @@ async function runScenario(browser, viewport, label) {
   assertText(text, '40', `${label} sql progress after reload`);
 
   await page.goto(`http://127.0.0.1:${port}/progress`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction("document.body.innerText.includes('Открыть книгу заказов')", null, {
+    timeout: 10_000
+  });
   text = await page.locator('body').innerText();
   assertText(text, 'XP в SQL Quest', `${label} progress page`);
   assertText(text, 'Открыть книгу заказов', `${label} progress recent lesson`);

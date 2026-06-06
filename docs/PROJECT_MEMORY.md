@@ -31,6 +31,7 @@
 - 2026-06-05: по результатам subagent review исправлен SQL CTE-урок, добавлен урок по оконным функциям, расширены SQL-тесты, e2e теперь запускает SQL, Toolkit сбрасывает output при смене инструмента, приоритетные knowledge nodes получили кураторские тексты.
 - 2026-06-05: SQL-тренажёр переведён в SQL Quest Mode: 8 глав, 24 задачи, пути `trial`/`case`, ранги, XP, блокировки prerequisites, Dexie-прогресс, обучающая диагностика SQL-ошибок и обновлённая ProgressPage.
 - 2026-06-05: добавлены точные SQL knowledge nodes: `sql-select-from`, `sql-where-filter`, `sql-join-relations`, `sql-left-join`, `sql-group-by`, `sql-having`, `sql-case-when`, `sql-subquery`, `sql-cte`, `sql-window-functions`.
+- 2026-06-06: проект подготовлен к Vercel deployment: добавлены SPA rewrites, PWA/cache/security headers, игнорирование `.vercel/`, команда `npm run verify:deploy` и инструкция `docs/DEPLOYMENT_VERCEL.md`.
 
 ## Что осталось
 

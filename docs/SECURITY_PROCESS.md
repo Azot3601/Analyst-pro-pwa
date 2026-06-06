@@ -45,6 +45,8 @@ npm audit --audit-level=moderate
 
 - Секреты не коммитить.
 - `.env.example` можно хранить только с безопасными placeholder-значениями.
+- Не хранить секреты в `VITE_*`: такие значения встраиваются в публичный frontend bundle.
+- `.vercel/` и `VERCEL_TOKEN` не коммитить; токен хранить только как локальный/CI secret.
 - Не печатать секреты в логах, тестах, issue, review log или финальных ответах.
 - `npm run dev` и `npm run preview` должны оставаться localhost-by-default; LAN-режим использовать только через `dev:lan` / `preview:lan` осознанно.
 - PWA cache не должен кешировать пользовательские секреты.
