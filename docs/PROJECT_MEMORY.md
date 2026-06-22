@@ -32,6 +32,7 @@
 - 2026-06-05: SQL-тренажёр переведён в SQL Quest Mode: 8 глав, 24 задачи, пути `trial`/`case`, ранги, XP, блокировки prerequisites, Dexie-прогресс, обучающая диагностика SQL-ошибок и обновлённая ProgressPage.
 - 2026-06-05: добавлены точные SQL knowledge nodes: `sql-select-from`, `sql-where-filter`, `sql-join-relations`, `sql-left-join`, `sql-group-by`, `sql-having`, `sql-case-when`, `sql-subquery`, `sql-cte`, `sql-window-functions`.
 - 2026-06-06: проект подготовлен к Vercel deployment: добавлены SPA rewrites, PWA/cache/security headers, игнорирование `.vercel/`, команда `npm run verify:deploy` и инструкция `docs/DEPLOYMENT_VERCEL.md`.
+- 2026-06-06: выполнен UX quality pass SQL Quest TrainerPage: SQL-редактор стал центральным действием, данные больше не дублируются, desktop получил трёхколоночный workspace, а mobile/tablet — вкладки с SQL по умолчанию.
 
 ## Что осталось
 
@@ -57,3 +58,4 @@
 - SQL-раздел получил учебную механику с последовательным усложнением, визуальной базой данных и контекстом задач.
 - Subagents стали реальной частью процесса: role prompts лежат в `agents/`, результаты ревью записываются в `docs/AGENT_REVIEW_LOG.md`.
 - SQL Quest Mode стал центральным режимом SQL: главы, пути, XP/ranks, persistent progress, блокировки, диагностика ошибок и knowledge links.
+- SQL Quest получил компактный responsive workspace: редактор и запуск находятся в первом рабочем экране, результат и диагностика идут сразу следом, вторичный контекст перенесён во вкладки и раскрываемые блоки.

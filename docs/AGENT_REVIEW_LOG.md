@@ -179,3 +179,31 @@ Remaining Backlog:
 - Выполнить `npm audit --audit-level=moderate` в среде с доступом к registry.
 - После Preview deployment проверить реальные Vercel deep links, headers, service worker и offline reload.
 - Рассмотреть code splitting: основной JS chunk остаётся крупным.
+
+## 2026-06-06 — SQL Quest Trainer UX Review
+
+Status: completed.
+
+Subagents:
+
+- UI/UX Motion Agent: completed.
+- QA Test Agent: completed.
+
+Key Findings:
+
+- Старый трёхколоночный layout включался только выше `1536px`, поэтому на laptop/desktop SQL-редактор уходил ниже вторичных блоков.
+- Данные базы показывались повторно, а диагностика ошибки находилась слишком далеко от результата.
+- На mobile отсутствовала рабочая навигация по приоритетным зонам SQL Quest.
+
+Actions Taken:
+
+- Desktop layout переведён на три рабочие колонки уже с `1280px`: задачи, SQL workspace, данные/подсказки.
+- Оставлен один компактный блок данных с таблицами, preview и связями.
+- Добавлены mobile/tablet вкладки с открытой по умолчанию вкладкой SQL.
+- Редактор, действия, результат и диагностика собраны в непрерывный основной поток.
+- Добавлены responsive e2e-проверки для `1440`, `1366`, tablet и `390px`.
+
+Residual Risks:
+
+- На очень узких экранах список верхних доменов использует горизонтальную прокрутку.
+- Основной JS chunk остаётся крупным и требует отдельной работы по code splitting.

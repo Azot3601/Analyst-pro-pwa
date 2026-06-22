@@ -1,3 +1,4 @@
+/* global document, getComputedStyle, window */
 import { chromium } from 'playwright';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -38,19 +39,83 @@ function assertText(text, expected, label) {
   }
 }
 
-async function runScenario(browser, viewport, label) {
+async function verifySqlLayout(page, viewport, label) {
+  const layout = await page.evaluate(() => {
+    const rect = (id) => {
+      const element = document.querySelector(`[data-testid="${id}"]`);
+      if (!element) return null;
+      const box = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return { x: box.x, y: box.y, width: box.width, height: box.height, display: style.display };
+    };
+    return {
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+      editor: rect('sql-editor'),
+      dataPanels: document.querySelectorAll('[data-testid="sql-data-panel"]').length,
+      sidebar: rect('quest-sidebar'),
+      workspace: rect('quest-workspace'),
+      aside: rect('quest-aside'),
+      mobileTabs: rect('mobile-quest-tabs')
+    };
+  });
+
+  if (layout.scrollWidth > layout.viewportWidth + 2) {
+    throw new Error(`${label}: обнаружен горизонтальный overflow`);
+  }
+  if (!layout.editor || layout.editor.y > viewport.height) {
+    throw new Error(`${label}: SQL-редактор не виден в первом экране`);
+  }
+  if (layout.dataPanels !== 1) {
+    throw new Error(`${label}: ожидался один блок данных, найдено ${layout.dataPanels}`);
+  }
+
+  if (viewport.width >= 1280) {
+    if (!layout.sidebar || !layout.workspace || !layout.aside) {
+      throw new Error(`${label}: отсутствует desktop layout`);
+    }
+    if (!(layout.sidebar.x + layout.sidebar.width < layout.workspace.x)) {
+      throw new Error(`${label}: левая колонка не находится перед workspace`);
+    }
+    if (!(layout.workspace.x + layout.workspace.width < layout.aside.x)) {
+      throw new Error(`${label}: правая колонка не находится после workspace`);
+    }
+  } else {
+    if (!layout.mobileTabs || layout.mobileTabs.display === 'none') {
+      throw new Error(`${label}: mobile-вкладки не видны`);
+    }
+    const sqlTab = page.getByRole('tab', { name: 'SQL', exact: true });
+    if ((await sqlTab.getAttribute('aria-selected')) !== 'true') {
+      throw new Error(`${label}: SQL-вкладка не активна по умолчанию`);
+    }
+  }
+}
+
+async function runScenario(browser, viewport, label, fullFlow = false) {
   const page = await browser.newPage({ viewport });
 
   await page.goto(`http://127.0.0.1:${port}/trainer`, { waitUntil: 'domcontentloaded' });
   let text = await page.locator('body').innerText();
-  assertText(text, 'SQL Quest Mode', `${label} trainer`);
-  assertText(text, 'Данные для этого шага', `${label} trainer`);
+  assertText(text, 'SQL-редактор', `${label} trainer`);
   assertText(text, 'Открыть книгу заказов', `${label} trainer`);
-  await page.getByText('Открыть подсказку').click();
+  await verifySqlLayout(page, viewport, label);
+
+  if (!fullFlow) {
+    await page.close();
+    return;
+  }
+
+  await page.getByText('Подсказка', { exact: true }).click();
+  if (viewport.width < 1280) {
+    await page.getByRole('tab', { name: 'Подсказки', exact: true }).click();
+  }
   await page.waitForFunction("document.body.innerText.includes('Подсказка 1')", null, { timeout: 10_000 });
   text = await page.locator('body').innerText();
   assertText(text, 'Подсказка 1', `${label} hint`);
-  await page.getByText('Запустить и проверить').click();
+  if (viewport.width < 1280) {
+    await page.getByRole('tab', { name: 'SQL', exact: true }).click();
+  }
+  await page.getByText('Запустить', { exact: true }).click();
   await page.waitForFunction(
     "document.body.innerText.includes('Результат совпадает с эталоном') || document.body.innerText.includes('SQL не выполнен')",
     null,
@@ -89,9 +154,11 @@ await new Promise((resolve) => server.listen(port, '127.0.0.1', resolve));
 let browser;
 try {
   browser = await chromium.launch({ headless: true });
-  await runScenario(browser, { width: 1440, height: 1100 }, 'desktop');
-  await runScenario(browser, { width: 412, height: 915 }, 'mobile');
-  console.log('E2E smoke passed: trainer, toolkit, knowledge on desktop and mobile.');
+  await runScenario(browser, { width: 1440, height: 1000 }, 'desktop-1440', true);
+  await runScenario(browser, { width: 1366, height: 768 }, 'laptop-1366');
+  await runScenario(browser, { width: 768, height: 1024 }, 'tablet-768');
+  await runScenario(browser, { width: 390, height: 844 }, 'mobile-390', true);
+  console.log('E2E smoke passed: responsive SQL Quest, toolkit, knowledge, and progress.');
 } finally {
   if (browser) await browser.close();
   await new Promise((resolve) => server.close(resolve));
