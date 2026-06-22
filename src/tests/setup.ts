@@ -13,3 +13,7 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false
   })
 });
+
+Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
+
+Range.prototype.getBoundingClientRect = () => new DOMRect();

@@ -19,6 +19,14 @@ describe('jsonTools', () => {
     expect(result.ok).toBe(true);
   });
 
+  it('returns a friendly result when JSON Schema cannot be compiled', () => {
+    const result = validateJsonSchema('{"id":"1"}', '{"type":"unknown-type"}');
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain('схем');
+    expect(result.details?.[0]).toContain('проверьте');
+  });
+
   it('diffs JSON values', () => {
     const result = diffJson('{"a":1}', '{"a":2}');
     expect(result.value?.[0]).toContain('1 → 2');

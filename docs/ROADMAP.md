@@ -24,6 +24,8 @@
 
 - JSON formatter/validator/diff/schema validator.
 - In-browser API simulator и request builder.
+- API Contract Quest: 8 REST, 8 JSON, 6 OpenAPI и 6 Integration задач, включая 3 SOAP basics.
+- Статус: реализовано внутри существующих вкладок TrainerPage.
 
 ## Этап 5. Knowledge Graph
 

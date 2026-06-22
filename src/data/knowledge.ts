@@ -93,6 +93,18 @@ const titles = [
   'Data Mapping',
   'Contract Review',
   'Backward Compatibility'
+  ,'HTTP methods'
+  ,'Required vs optional'
+  ,'Nullable'
+  ,'Enum'
+  ,'Breaking changes'
+  ,'Timeout'
+  ,'Async operation'
+  ,'Request ID'
+  ,'SOAP'
+  ,'WSDL'
+  ,'XSD'
+  ,'SOAP Fault'
 ];
 
 const slugOverrides: Record<string, string> = {
@@ -123,6 +135,18 @@ const slugOverrides: Record<string, string> = {
   'Совместимость API': 'compatibility',
   Webhooks: 'webhooks',
   'Асинхронное взаимодействие': 'async'
+  ,'HTTP methods': 'http-methods'
+  ,'Required vs optional': 'required-vs-optional'
+  ,'Nullable': 'nullable'
+  ,'Enum': 'enum'
+  ,'Breaking changes': 'breaking-changes'
+  ,'Timeout': 'timeout'
+  ,'Async operation': 'async-operation'
+  ,'Request ID': 'request-id'
+  ,'SOAP': 'soap'
+  ,'WSDL': 'wsdl'
+  ,'XSD': 'xsd'
+  ,'SOAP Fault': 'soap-fault'
 };
 
 const slugify = (title: string) =>
@@ -322,6 +346,104 @@ const curatedNodes: Record<
       { id: 'retry-policy', relation: 'used_in' }
     ],
     tags: ['webhooks', 'events', 'integration']
+  },
+  'required-vs-optional': {
+    summary: 'Required определяет обязательность поля, а optional разрешает полю отсутствовать.',
+    fullText:
+      'Аналитик фиксирует обязательность отдельно для запроса и ответа. Optional не означает null: отсутствующее поле и поле со значением null — разные состояния контракта и бизнес-смысла.',
+    examples: ['orderId обязателен, comment может отсутствовать.'],
+    antiExamples: ['Считать все nullable-поля необязательными.'],
+    related: [
+      { id: 'json-schema', relation: 'used_in' },
+      { id: 'nullable', relation: 'contrasts_with' }
+    ],
+    tags: ['json', 'schema', 'required']
+  },
+  nullable: {
+    summary: 'Nullable разрешает явное значение null, но само поле при этом может оставаться обязательным.',
+    fullText:
+      'Поле delivery может присутствовать всегда, но быть null до назначения доставки. Это отличается от optional-поля, которое вообще может отсутствовать в документе.',
+    examples: ['"delivery": null до назначения курьера.'],
+    antiExamples: ['Удалить обязательное nullable-поле из ответа.'],
+    related: [
+      { id: 'required-vs-optional', relation: 'contrasts_with' },
+      { id: 'json-schema', relation: 'used_in' }
+    ],
+    tags: ['json', 'nullable', 'контракт']
+  },
+  openapi: {
+    summary: 'OpenAPI — машиночитаемая карта договора: paths, methods, parameters, bodies, responses и schemas.',
+    fullText:
+      'Системный аналитик читает OpenAPI не как YAML-файл, а как проверяемый договор между потребителем и сервисом. В нём должны быть happy path, ошибки, обязательность, примеры и совместимые правила развития.',
+    examples: ['POST /orders описывает requestBody, 201, 422 и ссылки на схемы.'],
+    antiExamples: ['Описать только 200 и оставить модель ошибки устной договорённостью.'],
+    related: [
+      { id: 'rest', relation: 'prerequisite' },
+      { id: 'api-error-model', relation: 'used_in' },
+      { id: 'breaking-changes', relation: 'used_in' }
+    ],
+    tags: ['openapi', 'api', 'contract']
+  },
+  'breaking-changes': {
+    summary: 'Breaking change заставляет существующего потребителя менять код или ломает его ожидания.',
+    fullText:
+      'Удаление поля, смена типа, новый required-параметр или удаление response — типовые ломающие изменения. Добавление optional-поля обычно совместимо.',
+    examples: ['Смена total с number на string ломает клиентов.'],
+    antiExamples: ['Назвать любое добавление поля breaking change.'],
+    related: [
+      { id: 'compatibility', relation: 'prerequisite' },
+      { id: 'openapi', relation: 'used_in' }
+    ],
+    tags: ['api', 'compatibility', 'openapi']
+  },
+  timeout: {
+    summary: 'Timeout ограничивает время ожидания и переводит неопределённость сети в явный сценарий.',
+    fullText:
+      'После timeout неизвестно, выполнила ли удалённая система операцию. Поэтому повтор небезопасной команды требует идемпотентности и согласованной retry policy.',
+    examples: ['Таймаут 3 секунды, затем retry только для 502/503/504.'],
+    antiExamples: ['Повторять POST бесконечно после любого ответа.'],
+    related: [
+      { id: 'retry-policy', relation: 'used_in' },
+      { id: 'idempotency', relation: 'used_in' }
+    ],
+    tags: ['integration', 'timeout', 'reliability']
+  },
+  soap: {
+    summary: 'SOAP — строгий XML-протокол с Envelope, Header, Body и формализованным Fault.',
+    fullText:
+      'SOAP-контракт обычно описывается WSDL и XSD. Аналитику важно найти operation, структуру сообщения, namespace и модель ошибки, а не запоминать XML наизусть.',
+    examples: ['Envelope содержит Header и Body с GetDebtRequest.'],
+    antiExamples: ['Отправить operation вне SOAP Body.'],
+    related: [
+      { id: 'xml', relation: 'prerequisite' },
+      { id: 'wsdl', relation: 'used_in' },
+      { id: 'soap-fault', relation: 'used_in' }
+    ],
+    tags: ['soap', 'xml', 'integration']
+  },
+  wsdl: {
+    summary: 'WSDL описывает операции, сообщения, binding и адрес SOAP-службы.',
+    fullText:
+      'WSDL отвечает на вопросы: какие operation доступны, какие XML-сообщения ожидаются и куда обращаться. XSD задаёт строгие типы полей внутри сообщений.',
+    examples: ['operation GetDebt связана с GetDebtRequest и GetDebtResponse.'],
+    antiExamples: ['Считать WSDL примером одного XML-запроса.'],
+    related: [
+      { id: 'soap', relation: 'prerequisite' },
+      { id: 'xsd', relation: 'used_in' }
+    ],
+    tags: ['soap', 'wsdl', 'contract']
+  },
+  'soap-fault': {
+    summary: 'SOAP Fault — стандартизированная ошибка внутри SOAP Body.',
+    fullText:
+      'Fault должен сообщать код, причину и при необходимости детали. HTTP 500 без SOAP Fault недостаточен для согласованной обработки бизнес-ошибки.',
+    examples: ['Fault содержит Code, Reason и Detail для DEBTOR_NOT_FOUND.'],
+    antiExamples: ['Вернуть произвольный XML с полем error.'],
+    related: [
+      { id: 'soap', relation: 'used_in' },
+      { id: 'api-error-model', relation: 'related' }
+    ],
+    tags: ['soap', 'fault', 'errors']
   },
   adr: {
     summary: 'ADR фиксирует архитектурное решение, контекст, варианты, последствия и дату принятия.',

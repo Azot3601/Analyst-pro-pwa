@@ -207,3 +207,80 @@ Residual Risks:
 
 - На очень узких экранах список верхних доменов использует горизонтальную прокрутку.
 - Основной JS chunk остаётся крупным и требует отдельной работы по code splitting.
+
+## 2026-06-22 — API Contract Quest Review
+
+Status: completed.
+
+Reused subagents:
+
+- UI/UX Motion Agent: рабочее действие уходило ниже контекста на mobile; единый JSON editor не соответствовал REST/Integration.
+- QA Test Agent: отсутствовали реальная проверка REST/OpenAPI/Integration и non-SQL progress.
+
+New scoped agent:
+
+- API & Integration / System Analyst Mentor / Curriculum Designer: проверил учебную лестницу и рекомендовал отдельные data/checker/UI boundaries внутри TrainerPage.
+
+Actions:
+
+- Hardcoded REST execution заменён request builder и локальным simulator response.
+- Добавлены 28 самостоятельных задач и единый формат диагностики.
+- Добавлены JSON, OpenAPI, Integration и SOAP rule-based checkers.
+- Non-SQL progress подключён к Dexie без изменения SQL Quest.
+
+Final review fixes:
+
+- Устранён race загрузки Dexie progress, который мог сбросить введённый REST request.
+- Compatibility warnings теперь показываются вместе с успешным результатом.
+- SOAP checker проверяет namespace, Envelope root, расположение operation/Fault и Fault Code/Reason.
+- REST checker связывает path parameter с фактическим сегментом URL.
+- JSON/OpenAPI action перенесён перед справочной схемой на mobile; вложенный split отложен до 2xl.
+- npm run security:scan прошёл; внешние API, секреты и новые runtime dependencies не добавлялись.
+
+## 2026-06-22 — REST Onboarding Review
+
+Status: completed.
+
+Reused subagents:
+
+- API & Integration / Mentor / Curriculum: подтвердил необходимость неоцениваемого нулевого шага и единственного источника URL.
+- UI/UX Motion: рекомендовал компактный URL composer `Template → Value → Final URL` и раскрываемый onboarding.
+- QA Test: выявил риск двух независимых URL, каскад вторичных ошибок и потребность в computed URL regression tests.
+
+Actions:
+
+- Добавлен раскрываемый onboarding с техническим объяснением после каждой метафоры.
+- Endpoint template сделан read-only для path-param задач; final URL вычисляется из конкретных значений.
+- Для всех восьми REST-задач добавлены «Что сейчас тренируем» и «Где это в жизни».
+- Checker возвращает одну первичную ошибку при пустом placeholder или вводе имени параметра вместо значения.
+- Добавлены unit/component/e2e regression checks; SQL Quest не изменялся.
+
+Residual risks:
+
+- Onboarding повторно раскрывается после полной перезагрузки; отдельное сохранение его прохождения пока не требуется.
+- Полный path builder с несколькими параметрами покрыт общей функцией, но в текущем REST-контенте используется один параметр на endpoint.
+
+## 2026-06-22 — REST Beginner Learning Review
+
+Status: completed.
+
+Reused subagents:
+
+- API & Integration / Mentor / Curriculum: проверил педагогическую лестницу и contract examples.
+- UI/UX Motion: указал на дублирование workflow и необходимость компактных task-specific объяснений.
+- QA Test: потребовал единый Final URL data flow, grouped POST errors и проверки query/idempotency/422.
+
+Actions:
+
+- Все восемь REST-задач получили уникальные beginner guides и выполняемые примеры.
+- Header/query textarea заменены явными полями key/value с постоянными примерами формата.
+- Для POST/PATCH/PUT/payment/validation добавлены JSON body contract panels.
+- Final URL вычисляется из template, path values и query; simulator получает вычисленный path.
+- Request diagnostics группируются в одну первичную ошибку с деталями и последствиями.
+- Семантика DELETE уточнена: удаление черновика отделено от бизнес-отмены заказа.
+- Общий onboarding ограничен первой задачей; дубли «Где это в жизни» удалены из верхней карточки.
+
+Residual risks:
+
+- Simulator не хранит полноценный idempotency ledger; повтор с одним ключом детерминированно возвращает одну operationId.
+- Type/enum rules показаны в contract panel, но checker пока преимущественно проверяет required paths; simulator проверяет ключевые типы POST/payment.

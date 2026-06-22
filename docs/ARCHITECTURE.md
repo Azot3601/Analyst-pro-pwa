@@ -24,6 +24,8 @@ public/
 - SQL-тренажёр поднимает in-browser sql.js базу из локальных схем и сидов.
 - SQL Quest Mode использует отдельную модель `src/data/sqlQuest.ts`, обучающую диагностику `src/shared/lib/sqlDiagnostics.ts` и SQL-progress namespace внутри `UserProgress.sqlQuest`.
 - PWA service worker кеширует app shell, статику и wasm-ассеты.
+- API Contract Quest остаётся внутри вкладок TrainerPage: данные лежат в src/data/apiQuest.ts, проверки — в src/shared/lib/apiQuestCheckers.ts, UI — в src/features/trainer/api/ApiQuestWorkspace.tsx.
+- Общий non-SQL progress использует solvedTaskIds, attempts, revealedHints и lastTaskIdsByDomain; SQL namespace не изменён.
 
 ## Runtime
 

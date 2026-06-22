@@ -33,6 +33,9 @@
 - 2026-06-05: добавлены точные SQL knowledge nodes: `sql-select-from`, `sql-where-filter`, `sql-join-relations`, `sql-left-join`, `sql-group-by`, `sql-having`, `sql-case-when`, `sql-subquery`, `sql-cte`, `sql-window-functions`.
 - 2026-06-06: проект подготовлен к Vercel deployment: добавлены SPA rewrites, PWA/cache/security headers, игнорирование `.vercel/`, команда `npm run verify:deploy` и инструкция `docs/DEPLOYMENT_VERCEL.md`.
 - 2026-06-06: выполнен UX quality pass SQL Quest TrainerPage: SQL-редактор стал центральным действием, данные больше не дублируются, desktop получил трёхколоночный workspace, а mobile/tablet — вкладки с SQL по умолчанию.
+- 2026-06-22: REST/JSON/OpenAPI/Интеграции переработаны в API Contract Quest внутри TrainerPage: 28 задач, локальные валидаторы, REST builder, JSON diagnostics, OpenAPI checker, Integration/SOAP practice и IndexedDB progress.
+- 2026-06-22: REST получил нулевой onboarding про anatomy request, мини-практику path parameter, computed URL, прикладной фокус восьми уроков и приоритетную диагностику ошибки подстановки.
+- 2026-06-22: выполнен REST API Beginner Learning Pass: восемь задач получили структуру «объяснение → пример → практика → проверка → разбор», body contract panels, видимые тестовые значения, простые query/header inputs и сгруппированную диагностику.
 
 ## Что осталось
 
@@ -59,3 +62,4 @@
 - Subagents стали реальной частью процесса: role prompts лежат в `agents/`, результаты ревью записываются в `docs/AGENT_REVIEW_LOG.md`.
 - SQL Quest Mode стал центральным режимом SQL: главы, пути, XP/ranks, persistent progress, блокировки, диагностика ошибок и knowledge links.
 - SQL Quest получил компактный responsive workspace: редактор и запуск находятся в первом рабочем экране, результат и диагностика идут сразу следом, вторичный контекст перенесён во вкладки и раскрываемые блоки.
+- API-вкладки больше не используют шаблонные генераторы и hardcoded GET: диагностика показывает expected/actual/risk/fix/knowledge link.

@@ -10,6 +10,7 @@ import {
 import type { UserProgress } from '../../entities/schemas';
 
 export type SqlQuestProgress = NonNullable<UserProgress['sqlQuest']>;
+export type ApiTaskDomain = 'rest' | 'json' | 'openapi' | 'integration';
 
 export const defaultSqlQuestProgress: SqlQuestProgress = {
   solvedSqlLessonIds: [],
@@ -31,6 +32,7 @@ export const defaultProgress: UserProgress = {
   revealedHints: {},
   favoriteKnowledgeIds: [],
   lastRoute: '/',
+  lastTaskIdsByDomain: {},
   skillLevels: {
     SQL: 18,
     REST: 14,
@@ -87,6 +89,7 @@ export function normalizeProgress(progress: UserProgress): UserProgress {
     attempts: progress.attempts ?? {},
     revealedHints: progress.revealedHints ?? {},
     favoriteKnowledgeIds: progress.favoriteKnowledgeIds ?? [],
+    lastTaskIdsByDomain: progress.lastTaskIdsByDomain ?? {},
     skillLevels: progress.skillLevels ?? defaultProgress.skillLevels,
     weakZones: progress.weakZones ?? defaultProgress.weakZones,
     notes: progress.notes ?? {},
@@ -101,6 +104,98 @@ export async function getProgress() {
 
 export async function saveProgress(progress: UserProgress) {
   await db.progress.put(normalizeProgress({ ...progress, updatedAt: new Date().toISOString() }));
+}
+
+async function updateProgress(updater: (progress: UserProgress) => UserProgress) {
+  return db.transaction('rw', db.progress, async () => {
+    const stored = await db.progress.get('local-user');
+    const next = normalizeProgress(updater(stored ? normalizeProgress(stored) : defaultProgress));
+    await db.progress.put({ ...next, updatedAt: new Date().toISOString() });
+    return next;
+  });
+}
+
+function withApiLocation(progress: UserProgress, taskId: string, domain: ApiTaskDomain): UserProgress {
+  return normalizeProgress({
+    ...progress,
+    lastTaskId: taskId,
+    lastTaskIdsByDomain: {
+      ...(progress.lastTaskIdsByDomain ?? {}),
+      [domain]: taskId
+    }
+  });
+}
+
+export function applyApiTaskAttempt(
+  progress: UserProgress,
+  taskId: string,
+  domain: ApiTaskDomain
+): UserProgress {
+  const normalized = normalizeProgress(progress);
+  return withApiLocation(
+    {
+      ...normalized,
+      attempts: {
+        ...normalized.attempts,
+        [taskId]: (normalized.attempts[taskId] ?? 0) + 1
+      }
+    },
+    taskId,
+    domain
+  );
+}
+
+export function applyApiTaskHint(
+  progress: UserProgress,
+  taskId: string,
+  hintId: string,
+  domain: ApiTaskDomain
+): UserProgress {
+  const normalized = normalizeProgress(progress);
+  const current = normalized.revealedHints[taskId] ?? [];
+  return withApiLocation(
+    {
+      ...normalized,
+      revealedHints: {
+        ...normalized.revealedHints,
+        [taskId]: Array.from(new Set([...current, hintId]))
+      }
+    },
+    taskId,
+    domain
+  );
+}
+
+export function applyApiTaskSolve(
+  progress: UserProgress,
+  taskId: string,
+  domain: ApiTaskDomain
+): UserProgress {
+  const normalized = normalizeProgress(progress);
+  return withApiLocation(
+    {
+      ...normalized,
+      solvedTaskIds: Array.from(new Set([...normalized.solvedTaskIds, taskId]))
+    },
+    taskId,
+    domain
+  );
+}
+
+export function recordApiTaskAttempt(taskId: string, domain: ApiTaskDomain) {
+  return updateProgress((progress) => applyApiTaskAttempt(progress, taskId, domain));
+}
+
+export function revealApiTaskHint(taskId: string, hintId: string, domain: ApiTaskDomain) {
+  return updateProgress((progress) => applyApiTaskHint(progress, taskId, hintId, domain));
+}
+
+export function solveApiTask(taskId: string, domain: ApiTaskDomain) {
+  return updateProgress((progress) => applyApiTaskSolve(progress, taskId, domain));
+}
+
+export function setLastApiTask(taskId: string, domain: ApiTaskDomain) {
+  return updateProgress((progress) => withApiLocation(progress, taskId, domain));
 }
 
 export async function markTaskSolved(taskId: string) {

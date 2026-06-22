@@ -128,6 +128,36 @@ async function runScenario(browser, viewport, label, fullFlow = false) {
   text = await page.locator('body').innerText();
   assertText(text, '40', `${label} sql progress after reload`);
 
+  await page.goto(`http://127.0.0.1:${port}/trainer`, { waitUntil: 'domcontentloaded' });
+  await page.getByRole('tab', { name: 'REST API' }).click();
+  await page.getByTestId('rest-path-param-orderId').fill('ORD-1001');
+  await page.getByTestId('computed-rest-url').filter({ hasText: '/api/v1/orders/ORD-1001' }).waitFor();
+  await page.getByRole('button', { name: 'Отправить / Проверить' }).click();
+  await page.waitForFunction("document.body.innerText.includes('Контракт выполнен')", null, { timeout: 10_000 });
+  text = await page.locator('body').innerText();
+  assertText(text, 'HTTP 200', `${label} REST response`);
+
+  await page.getByRole('tab', { name: 'JSON', exact: true }).click();
+  await page.getByRole('button', { name: 'Проверить JSON' }).click();
+  await page.waitForFunction("document.body.innerText.includes('missing-required')", null, { timeout: 10_000 });
+
+  await page.getByRole('tab', { name: 'OpenAPI', exact: true }).click();
+  if (viewport.width >= 1280) {
+    await page.getByRole('button', { name: '03 Успешные и ошибочные responses', exact: true }).click();
+  } else {
+    await page.getByLabel('Учебная задача').selectOption('api-quest-openapi-3');
+  }
+  await page.getByRole('heading', { name: 'Успешные и ошибочные responses', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Проверить контракт' }).click();
+  await page.waitForFunction("document.body.innerText.includes('openapi-response')", null, { timeout: 10_000 });
+
+  await page.getByRole('tab', { name: 'Интеграции', exact: true }).click();
+  for (const concept of ['eventId', 'идемпотентность', 'retry', 'подпись']) {
+    await page.getByRole('checkbox', { name: concept }).check();
+  }
+  await page.getByRole('button', { name: 'Проверить решение' }).click();
+  await page.waitForFunction("document.body.innerText.includes('Контракт выполнен')", null, { timeout: 10_000 });
+
   await page.goto(`http://127.0.0.1:${port}/progress`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction("document.body.innerText.includes('Открыть книгу заказов')", null, {
     timeout: 10_000
@@ -158,7 +188,7 @@ try {
   await runScenario(browser, { width: 1366, height: 768 }, 'laptop-1366');
   await runScenario(browser, { width: 768, height: 1024 }, 'tablet-768');
   await runScenario(browser, { width: 390, height: 844 }, 'mobile-390', true);
-  console.log('E2E smoke passed: responsive SQL Quest, toolkit, knowledge, and progress.');
+  console.log('E2E smoke passed: SQL Quest, API Contract Quest, toolkit, knowledge, and progress.');
 } finally {
   if (browser) await browser.close();
   await new Promise((resolve) => server.close(resolve));

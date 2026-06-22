@@ -56,4 +56,25 @@ npm run test:e2e
 - Documentation/Knowledge/Toolkit agent нашёл stale docs, placeholder knowledge content и stale Toolkit output.
 - Product/UI agent указал на слабые связи между trainer, knowledge и toolkit.
 
+## API Contract Quest Checks
+
+- Unit: REST checker/simulator, JSON diagnostics, OpenAPI checker, integration checklist, SOAP XML parser, non-SQL progress.
+- Component: корректный REST request, missing required JSON, missing OpenAPI response, integration idempotency/retry checklist.
+- E2E smoke: последовательное открытие REST, JSON, OpenAPI и Интеграций внутри /trainer.
+- Фактический прогон 2026-06-22: 11 test files, 69 tests; lint, typecheck, test, build и API-enhanced e2e smoke проходят.
+
 Выполненные исправления зафиксированы в `docs/AGENT_REVIEW_LOG.md`.
+
+## REST Onboarding Checks
+
+- Unit: построение final URL, metadata восьми REST-уроков и приоритетная ошибка неподставленного path parameter.
+- Component: onboarding, мини-практика `ORD-1001`, computed URL, успешный GET и отсутствие каскада `rest-status`/`rest-response-field`.
+- E2E smoke использует только значение `orderId`; полный path больше не вводится вторым независимым способом.
+
+## REST Beginner Learning Checks
+
+- Unit: каждый из восьми учебных примеров выполняется через локальный simulator и проходит REST checker.
+- Unit: Final URL включает path values и query params; неполный POST даёт один grouped diagnostic.
+- Unit: проверяются Content-Type, required body, pagination/query, Idempotency-Key и ожидаемый HTTP 422.
+- Component: `Перед решением`, тестовые значения, пример без автозаполнения, body contract panel и единственная карточка основной ошибки.
+- SQL unit/component fixtures этим этапом не изменяются.

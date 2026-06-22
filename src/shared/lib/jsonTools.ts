@@ -36,7 +36,16 @@ export function validateJsonSchema(jsonInput: string, schemaInput: string): Json
   if (!schema.ok) return { ...schema, message: 'JSON Schema не удалось разобрать.' };
 
   const ajv = new Ajv({ allErrors: true, strict: false });
-  const validate = ajv.compile(schema.value as object);
+  let validate;
+  try {
+    validate = ajv.compile(schema.value as object);
+  } catch {
+    return {
+      ok: false,
+      message: 'JSON-схема содержит некорректное правило.',
+      details: ['Стража схемы не смогла собрать контракт: проверьте type, properties и required.']
+    };
+  }
   const ok = validate(json.value);
 
   return {

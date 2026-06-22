@@ -101,6 +101,7 @@ export const userProgressSchema = z.object({
   favoriteKnowledgeIds: z.array(z.string()),
   lastRoute: z.string(),
   lastTaskId: z.string().optional(),
+  lastTaskIdsByDomain: z.record(z.string(), z.string()).optional(),
   skillLevels: z.record(z.string(), z.number().min(0).max(100)),
   weakZones: z.array(z.string()),
   streak: z.number().int().nonnegative(),

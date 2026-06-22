@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { sqlQuestLessons } from '../../data/sqlQuest';
 import {
+  applyApiTaskAttempt,
+  applyApiTaskHint,
+  applyApiTaskSolve,
   applySqlQuestAttempt,
   applySqlQuestHint,
   applySqlQuestSolve,
@@ -42,5 +45,24 @@ describe('progress defaults', () => {
 
     expect(restored.sqlQuest?.solvedSqlLessonIds).toContain(lesson.id);
     expect(restored.sqlQuest?.lastSqlLessonId).toBe(lesson.id);
+  });
+
+  it('persists API task attempts, hints and last task by domain', () => {
+    const attempted = applyApiTaskAttempt(defaultProgress, 'rest-get-orders', 'rest');
+    const hinted = applyApiTaskHint(attempted, 'rest-get-orders', 'hint-1', 'rest');
+    const restored = normalizeProgress(JSON.parse(JSON.stringify(hinted)));
+
+    expect(restored.attempts['rest-get-orders']).toBe(1);
+    expect(restored.revealedHints['rest-get-orders']).toEqual(['hint-1']);
+    expect(restored.lastTaskIdsByDomain?.rest).toBe('rest-get-orders');
+  });
+
+  it('marks an API task solved once without changing SQL Quest progress', () => {
+    const first = applyApiTaskSolve(defaultProgress, 'json-order-contract', 'json');
+    const second = applyApiTaskSolve(first, 'json-order-contract', 'json');
+
+    expect(second.solvedTaskIds).toEqual(['json-order-contract']);
+    expect(second.lastTaskIdsByDomain?.json).toBe('json-order-contract');
+    expect(second.sqlQuest).toEqual(defaultProgress.sqlQuest);
   });
 });
