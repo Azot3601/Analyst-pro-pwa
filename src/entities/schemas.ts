@@ -64,6 +64,10 @@ export const knowledgeNodeSchema = z.object({
   level: z.enum(['basic', 'intermediate', 'advanced']),
   summary: z.string(),
   fullText: z.string(),
+  // Расширенный rich-контент «высшего уровня» (опционально, обратно совместимо).
+  whyItMatters: z.string().optional(),
+  walkthrough: z.array(z.string()).optional(),
+  diagramId: z.string().optional(),
   examples: z.array(z.string()),
   antiExamples: z.array(z.string()),
   related: z.array(

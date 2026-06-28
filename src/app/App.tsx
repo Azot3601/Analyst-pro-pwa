@@ -95,7 +95,7 @@ export function App() {
             </button>
           </header>
 
-          <main className="px-4 pb-24 pt-6 lg:px-8 lg:pb-8">
+          <main className="mx-auto w-full max-w-[1640px] px-4 pb-24 pt-6 lg:px-10 lg:pb-10">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}

@@ -37,6 +37,7 @@ import {
 import { simulateApiRequest, type ApiResponse } from '../../../shared/lib/apiSimulator';
 import { Button } from '../../../shared/ui/Button';
 import { Panel } from '../../../shared/ui/Panel';
+import { GlossaryText } from '../../knowledge/GlossaryText';
 
 type Props = { domain: ApiTaskDomain };
 type RestDraft = {
@@ -727,7 +728,7 @@ export function ApiQuestWorkspace({ domain }: Props) {
             </div>
             <span className="rounded-md bg-white/10 px-2 py-1 text-xs text-slate-300">{task.level} · {task.estimatedFocus}</span>
           </div>
-          <p className="mt-2 text-sm leading-5 text-slate-300">{task.learningGoal}</p>
+          <p className="mt-2 text-sm leading-5 text-slate-300"><GlossaryText>{task.learningGoal}</GlossaryText></p>
           <p className="mt-2 text-xs text-amber">{task.shortIntro}</p>
         </section>
         {task.kind === 'rest' && <RestBeforeSolution key={task.id} task={task} />}
@@ -749,7 +750,7 @@ export function ApiQuestWorkspace({ domain }: Props) {
           <details className="rounded-md border border-white/10 bg-white/[0.04] p-3">
             <summary className="cursor-pointer text-sm font-semibold text-slate-200">Контекст и теория</summary>
             <div className="mt-3 space-y-2 text-sm leading-6 text-slate-400">
-              <p>{task.caseContext}</p><p>{task.businessGoal}</p><p>{task.explanation}</p>
+              <p><GlossaryText>{task.caseContext}</GlossaryText></p><p><GlossaryText>{task.businessGoal}</GlossaryText></p><p><GlossaryText>{task.explanation}</GlossaryText></p>
             </div>
           </details>
           <details className="rounded-md border border-white/10 bg-white/[0.04] p-3">
@@ -775,9 +776,9 @@ export function ApiQuestWorkspace({ domain }: Props) {
 
       <aside className="hidden min-w-0 space-y-3 xl:block">
         <Panel title="Контекст">
-          <p className="text-sm leading-6 text-slate-300">{task.caseContext}</p>
+          <p className="text-sm leading-6 text-slate-300"><GlossaryText>{task.caseContext}</GlossaryText></p>
           <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-electric">Цель бизнеса</p>
-          <p className="mt-1 text-sm leading-6 text-slate-400">{task.businessGoal}</p>
+          <p className="mt-1 text-sm leading-6 text-slate-400"><GlossaryText>{task.businessGoal}</GlossaryText></p>
         </Panel>
         <Panel title="Подсказки" action={<KeyRound size={15} className="text-amber" />}>
           <div className="space-y-2">

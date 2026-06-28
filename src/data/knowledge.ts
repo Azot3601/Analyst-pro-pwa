@@ -1,4 +1,5 @@
 import { knowledgeNodeSchema, type KnowledgeNode } from '../entities/schemas';
+import { richNodes } from './knowledgeRich';
 
 const titles = [
   'Требования',
@@ -160,7 +161,20 @@ const slugify = (title: string) =>
 
 const curatedNodes: Record<
   string,
-  Partial<Pick<KnowledgeNode, 'summary' | 'fullText' | 'examples' | 'antiExamples' | 'related' | 'tags'>>
+  Partial<
+    Pick<
+      KnowledgeNode,
+      | 'summary'
+      | 'fullText'
+      | 'whyItMatters'
+      | 'walkthrough'
+      | 'diagramId'
+      | 'examples'
+      | 'antiExamples'
+      | 'related'
+      | 'tags'
+    >
+  >
 > = {
   sql: {
     summary: 'SQL помогает аналитику проверять гипотезы по данным, искать расхождения и формулировать отчётные правила.',
@@ -497,7 +511,7 @@ export const knowledgeNodes = knowledgeNodeSchema.array().parse(
       ]
     } satisfies KnowledgeNode;
 
-    return { ...baseNode, ...curatedNodes[id] } satisfies KnowledgeNode;
+    return { ...baseNode, ...curatedNodes[id], ...richNodes[id] } satisfies KnowledgeNode;
   })
 );
 
