@@ -1,11 +1,14 @@
+@import '@fontsource-variable/plus-jakarta-sans';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: dark;
-  background: #08111f;
-  color: #e7eefb;
+  background: #14121e;
+  color: #ece9f7;
+  font-family: 'Plus Jakarta Sans Variable', Inter, system-ui, 'Segoe UI', Arial, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,9 +25,11 @@ body {
   margin: 0;
   min-width: 320px;
   background:
-    radial-gradient(circle at 15% 0%, rgba(110, 231, 249, 0.14), transparent 30rem),
-    radial-gradient(circle at 82% 12%, rgba(155, 140, 255, 0.13), transparent 28rem),
-    #08111f;
+    radial-gradient(circle at 12% -4%, rgba(139, 123, 255, 0.18), transparent 32rem),
+    radial-gradient(circle at 88% 6%, rgba(255, 206, 106, 0.1), transparent 30rem),
+    radial-gradient(circle at 50% 120%, rgba(87, 217, 163, 0.08), transparent 34rem),
+    #14121e;
+  background-attachment: fixed;
 }
 
 button,
@@ -38,22 +43,54 @@ select {
   box-sizing: border-box;
 }
 
+::selection {
+  background: rgba(139, 123, 255, 0.32);
+  color: #fff;
+}
+
+/* Дружелюбный тонкий скроллбар */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 123, 255, 0.4) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(139, 123, 255, 0.32);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 123, 255, 0.5);
+  background-clip: padding-box;
+}
+
+/* Светлая тема — мягкая и тёплая */
 .light {
   color-scheme: light;
 }
 
 .light body,
 .light #root {
-  background: #f6f8fc;
-  color: #101828;
+  color: #2b2740;
+  background:
+    radial-gradient(circle at 12% -4%, rgba(139, 123, 255, 0.16), transparent 30rem),
+    radial-gradient(circle at 88% 6%, rgba(255, 206, 106, 0.16), transparent 28rem),
+    #f6f4fb;
 }
 
 .react-flow__node {
-  border-radius: 8px;
-  border: 1px solid #2a3954;
-  background: #121e31;
-  color: #e7eefb;
+  border-radius: 12px;
+  border: 1px solid #322b46;
+  background: #221d34;
+  color: #ece9f7;
   font-size: 12px;
   padding: 8px 10px;
-  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.22);
+  box-shadow: 0 16px 40px -18px rgba(8, 6, 20, 0.6);
 }

@@ -11,7 +11,7 @@ export function Panel({ children, className, title, action }: PanelProps) {
   return (
     <section
       className={clsx(
-        'rounded-lg border border-white/10 bg-white/[0.055] p-4 shadow-panel backdrop-blur',
+        'rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-panel backdrop-blur-md sm:p-5',
         className
       )}
     >

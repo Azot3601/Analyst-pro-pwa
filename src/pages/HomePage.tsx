@@ -17,11 +17,15 @@ export function HomePage() {
   return (
     <div className="space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
-        <Panel className="overflow-hidden p-0">
-          <div className="relative p-6">
-            <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-electric/10 blur-3xl" />
+        <Panel className="overflow-hidden border-electric/15 bg-gradient-to-br from-electric/[0.14] via-mentor/[0.06] to-transparent p-0">
+          <div className="relative p-6 md:p-8">
+            <div className="absolute -right-10 top-0 h-56 w-56 rounded-full bg-electric/20 blur-3xl" />
+            <div className="absolute -left-10 bottom-0 h-40 w-40 rounded-full bg-amber/10 blur-3xl" />
             <div className="relative max-w-3xl">
-              <h1 className="text-3xl font-bold leading-tight text-white md:text-5xl">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-electric/25 bg-electric/10 px-3 py-1 text-xs font-semibold text-electric">
+                <Sparkles size={13} /> Без LLM API · работает офлайн
+              </span>
+              <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-white md:text-5xl">
                 Тренажёр системного аналитика для практики, контрактов и данных
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">

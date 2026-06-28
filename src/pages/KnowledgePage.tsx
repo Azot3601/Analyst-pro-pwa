@@ -8,11 +8,11 @@ import { tasks } from '../data/tasks';
 import { Panel } from '../shared/ui/Panel';
 
 const relationColor: Record<string, string> = {
-  prerequisite: '#6ee7f9',
-  related: '#9b8cff',
-  used_in: '#5ee0a2',
-  common_mistake: '#ff7b91',
-  example: '#f6c453',
+  prerequisite: '#8b7bff',
+  related: '#b3a4ff',
+  used_in: '#57d9a3',
+  common_mistake: '#ff7a93',
+  example: '#ffce6a',
   contrasts_with: '#f472b6'
 };
 
@@ -58,7 +58,7 @@ export function KnowledgePage() {
           target: relation.id,
           label: relation.relation,
           animated: node.id === selectedId,
-          style: { stroke: relationColor[relation.relation] ?? '#6ee7f9' }
+          style: { stroke: relationColor[relation.relation] ?? '#8b7bff' }
         }))
     );
     return { nodes, edges };
@@ -109,8 +109,8 @@ export function KnowledgePage() {
               fitView
               onNodeClick={(_, node) => setSelectedId(node.id)}
             >
-              <Background color="#27364f" gap={24} />
-              <MiniMap pannable zoomable nodeColor="#121e31" maskColor="rgba(8,17,31,0.72)" />
+              <Background color="#322b46" gap={24} />
+              <MiniMap pannable zoomable nodeColor="#221d34" maskColor="rgba(20,18,30,0.74)" />
               <Controls />
             </ReactFlow>
           </div>

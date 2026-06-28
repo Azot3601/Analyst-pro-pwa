@@ -20,6 +20,7 @@
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lang-sql": "^6.8.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
     "@uiw/react-codemirror": "^4.23.13",
     "ajv": "^8.17.1",
     "clsx": "^2.1.1",
@@ -28,11 +29,11 @@
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "reactflow": "^11.11.4",
     "react-router-dom": "^7.0.2",
+    "reactflow": "^11.11.4",
     "sql.js": "^1.12.0",
-    "zustand": "^5.0.2",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",

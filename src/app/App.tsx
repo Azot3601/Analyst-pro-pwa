@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, BrainCircuit, Gauge, Home, Moon, Settings, TerminalSquare, Wrench } from 'lucide-react';
+import { BookOpen, BrainCircuit, Gauge, Home, Moon, Settings, Sun, TerminalSquare, Wrench } from 'lucide-react';
 import { useEffect } from 'react';
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { KnowledgePage } from '../pages/KnowledgePage';
@@ -22,6 +22,7 @@ const nav = [
 export function App() {
   const location = useLocation();
   const { theme, setTheme } = useAppStore();
+  const isLight = theme === 'light';
 
   useEffect(() => {
     document.documentElement.classList.toggle('light', theme === 'light');
@@ -29,20 +30,20 @@ export function App() {
   }, [theme]);
 
   return (
-    <div className={theme === 'light' ? 'light' : 'dark'}>
-      <div className="min-h-screen bg-ink/95 text-slate-100">
-        <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 border-r border-white/10 bg-graphite/92 p-5 backdrop-blur lg:block">
-          <NavLink to="/" className="mb-8 flex items-center gap-3">
-            <div className="grid size-11 place-items-center rounded-lg bg-electric text-lg font-black text-ink">
+    <div className={isLight ? 'light' : 'dark'}>
+      <div className="min-h-screen text-slate-100">
+        <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 border-r border-white/[0.06] bg-graphite/70 p-5 backdrop-blur-xl lg:flex lg:flex-col">
+          <NavLink to="/" className="mb-9 flex items-center gap-3">
+            <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-electric to-mentor text-lg font-black text-ink shadow-lift">
               AP
             </div>
             <div>
-              <div className="text-lg font-bold">Аналитик Pro</div>
-              <div className="text-xs text-slate-400">Hard skills без LLM API</div>
+              <div className="text-lg font-extrabold tracking-tight">Аналитик Pro</div>
+              <div className="text-xs text-slate-400">Тренажёр системного аналитика</div>
             </div>
           </NavLink>
 
-          <nav className="space-y-1">
+          <nav className="space-y-1.5">
             {nav.map((item) => {
               const Icon = item.icon;
               return (
@@ -50,45 +51,51 @@ export function App() {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition ${
+                    `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-white/[0.12] text-electric'
-                        : 'text-slate-300 hover:bg-white/[0.08] hover:text-white'
+                        ? 'bg-electric/15 text-electric shadow-soft ring-1 ring-electric/25'
+                        : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
                     }`
                   }
                 >
-                  <Icon size={18} />
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      <Icon size={18} className={isActive ? 'text-electric' : 'text-slate-400 group-hover:text-white'} />
+                      {item.label}
+                    </>
+                  )}
                 </NavLink>
               );
             })}
           </nav>
 
-          <div className="absolute bottom-5 left-5 right-5 rounded-lg border border-white/10 bg-white/[0.04] p-4">
+          <div className="mt-auto rounded-2xl border border-white/[0.08] bg-gradient-to-br from-electric/[0.12] to-transparent p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
               <BookOpen size={16} className="text-amber" />
               Сегодня прокачиваем
             </div>
-            <p className="text-sm text-slate-400">SQL + идемпотентность + модель ошибок API</p>
+            <p className="text-sm text-slate-400">SQL · идемпотентность · модель ошибок API</p>
           </div>
         </aside>
 
         <div className="lg:pl-72">
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-white/10 bg-ink/78 px-4 backdrop-blur lg:px-8">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-white/[0.06] bg-ink/70 px-4 backdrop-blur-xl lg:px-8">
             <div>
-              <div className="text-xs uppercase tracking-[0.22em] text-electric/80">PWA offline-first</div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-electric/80">
+                PWA · offline-first
+              </div>
               <div className="text-sm text-slate-400">Локальное обучение системному анализу</div>
             </div>
             <button
               aria-label="Переключить тему"
-              className="grid size-10 place-items-center rounded-md border border-white/10 bg-white/[0.08] text-slate-200 transition hover:bg-white/[0.14]"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="grid size-10 place-items-center rounded-xl border border-white/[0.08] bg-white/[0.06] text-slate-200 transition-all hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.12]"
+              onClick={() => setTheme(isLight ? 'dark' : 'light')}
             >
-              <Moon size={18} />
+              {isLight ? <Moon size={18} /> : <Sun size={18} />}
             </button>
           </header>
 
-          <main className="px-4 pb-24 pt-6 lg:px-8 lg:pb-6">
+          <main className="px-4 pb-24 pt-6 lg:px-8 lg:pb-8">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
@@ -110,7 +117,7 @@ export function App() {
           </main>
         </div>
 
-        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-white/10 bg-graphite/95 px-1 py-2 backdrop-blur lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 gap-1 border-t border-white/[0.06] bg-graphite/85 px-2 py-2 backdrop-blur-xl lg:hidden">
           {nav.map((item) => {
             const Icon = item.icon;
             return (
@@ -118,12 +125,12 @@ export function App() {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex flex-col items-center gap-1 rounded-md px-1 py-1.5 text-[10px] ${
-                    isActive ? 'text-electric' : 'text-slate-400'
+                  `flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[10px] font-medium transition-colors ${
+                    isActive ? 'bg-electric/15 text-electric' : 'text-slate-400 hover:text-slate-200'
                   }`
                 }
               >
-                <Icon size={17} />
+                <Icon size={18} />
                 <span className="max-w-full truncate">{item.label}</span>
               </NavLink>
             );
