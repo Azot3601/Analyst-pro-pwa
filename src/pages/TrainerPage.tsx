@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { SqlQuestWorkspace } from '../features/trainer/SqlQuestWorkspace';
 import { ApiQuestWorkspace } from '../features/trainer/api/ApiQuestWorkspace';
+import { RequirementsQuestWorkspace } from '../features/trainer/requirements/RequirementsQuestWorkspace';
 import type { ApiTaskDomain } from '../features/progress/progressDb';
 
-type TrainerDomain = 'sql' | ApiTaskDomain;
+type TrainerDomain = 'sql' | 'requirements' | ApiTaskDomain;
 
 const domains: Array<{ id: TrainerDomain; label: string }> = [
+  { id: 'requirements', label: 'Требования' },
   { id: 'sql', label: 'SQL Quest' },
   { id: 'rest', label: 'REST API' },
   { id: 'json', label: 'JSON' },
@@ -26,7 +28,7 @@ export function TrainerPage() {
         <div
           role="tablist"
           aria-label="Разделы тренажёра"
-          className="grid min-w-[560px] grid-cols-5 gap-2 rounded-lg border border-white/10 bg-white/[0.055] p-2"
+          className="grid min-w-[660px] grid-cols-6 gap-2 rounded-lg border border-white/10 bg-white/[0.055] p-2"
         >
           {domains.map((item) => (
             <button
@@ -58,7 +60,13 @@ export function TrainerPage() {
         role="tabpanel"
         aria-labelledby={`trainer-tab-${domain}`}
       >
-        {domain === 'sql' ? <SqlQuestWorkspace /> : <ApiQuestWorkspace domain={domain} />}
+        {domain === 'sql' ? (
+          <SqlQuestWorkspace />
+        ) : domain === 'requirements' ? (
+          <RequirementsQuestWorkspace />
+        ) : (
+          <ApiQuestWorkspace domain={domain} />
+        )}
       </div>
     </div>
   );
