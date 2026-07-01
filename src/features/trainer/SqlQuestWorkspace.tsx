@@ -20,6 +20,7 @@ import { useAppStore } from '../../app/store';
 import { SophieAvatar } from '../../shared/ui/SophieAvatar';
 import type { SophieState } from '../../shared/ui/SophiePortrait';
 import { mentor } from '../../data/mentor';
+import { SqlDemonstration } from './SqlDemonstration';
 import {
   getNextRankForXp,
   getRankForXp,
@@ -542,6 +543,23 @@ export function SqlQuestWorkspace() {
           </div>
         </div>
         <div className="mt-2 text-xs font-semibold text-mentor">{lesson.sqlConcept}</div>
+      </div>
+
+      <SqlDemonstration concept={lesson.sqlConcept} />
+
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-electric/80">Разбор задачи</div>
+        <p className="mt-1.5 text-sm leading-6 text-slate-200">{lesson.businessContext}</p>
+        <p className="mt-2 text-sm leading-6 text-slate-400">{lesson.explanation}</p>
+        {lesson.successCriteria.length > 0 && (
+          <ul className="mt-3 space-y-1.5">
+            {lesson.successCriteria.map((criterion) => (
+              <li key={criterion} className="flex gap-2 text-xs leading-5 text-slate-300">
+                <Check size={14} className="mt-0.5 shrink-0 text-success" /> {criterion}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {!unlocked && (
