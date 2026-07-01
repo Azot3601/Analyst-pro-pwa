@@ -9,11 +9,13 @@ type AppState = {
   soundEnabled: boolean;
   reducedMotion: boolean;
   volume: number;
+  expertMode: boolean;
   setTheme: (theme: Theme) => void;
   setActiveSkill: (skill: string) => void;
   setSoundEnabled: (value: boolean) => void;
   setReducedMotion: (value: boolean) => void;
   setVolume: (value: number) => void;
+  setExpertMode: (value: boolean) => void;
 };
 
 // Настройки сохраняются в localStorage (тема теперь тоже переживает перезагрузку).
@@ -25,11 +27,13 @@ export const useAppStore = create<AppState>()(
       soundEnabled: true,
       reducedMotion: false,
       volume: 0.7,
+      expertMode: false,
       setTheme: (theme) => set({ theme }),
       setActiveSkill: (activeSkill) => set({ activeSkill }),
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
       setReducedMotion: (reducedMotion) => set({ reducedMotion }),
-      setVolume: (volume) => set({ volume })
+      setVolume: (volume) => set({ volume }),
+      setExpertMode: (expertMode) => set({ expertMode })
     }),
     {
       name: 'analyst-pro-prefs',
@@ -37,7 +41,8 @@ export const useAppStore = create<AppState>()(
         theme: state.theme,
         soundEnabled: state.soundEnabled,
         reducedMotion: state.reducedMotion,
-        volume: state.volume
+        volume: state.volume,
+        expertMode: state.expertMode
       })
     }
   )

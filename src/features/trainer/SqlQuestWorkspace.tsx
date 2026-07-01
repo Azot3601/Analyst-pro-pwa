@@ -1,9 +1,11 @@
 import { sql } from '@codemirror/lang-sql';
 import CodeMirror from '@uiw/react-codemirror';
 import {
+  BookOpen,
   Check,
   ChevronDown,
   Database,
+  EyeOff,
   Lightbulb,
   Link2,
   Lock,
@@ -21,6 +23,7 @@ import { SophieAvatar } from '../../shared/ui/SophieAvatar';
 import type { SophieState } from '../../shared/ui/SophiePortrait';
 import { mentor } from '../../data/mentor';
 import { SqlDemonstration } from './SqlDemonstration';
+import { SqlBreakdown, SqlPrimer } from './SqlBreakdown';
 import {
   getNextRankForXp,
   getRankForXp,
@@ -466,6 +469,9 @@ export function SqlQuestWorkspace() {
   const revealedHintIds = quest.revealedHintsByLessonId[lesson.id] ?? [];
   const revealedHints = lesson.hints.filter((_, index) => revealedHintIds.includes(String(index)));
 
+  const expertMode = useAppStore((s) => s.expertMode);
+  const setExpertMode = useAppStore((s) => s.setExpertMode);
+
   const handleRun = async () => {
     if (!unlocked) {
       setFeedback({ state: 'error', message: 'Задача пока закрыта. Сначала решите предыдущие шаги.' });
@@ -545,12 +551,29 @@ export function SqlQuestWorkspace() {
         <div className="mt-2 text-xs font-semibold text-mentor">{lesson.sqlConcept}</div>
       </div>
 
-      <SqlDemonstration concept={lesson.sqlConcept} />
-
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-        <div className="text-[10px] font-semibold uppercase tracking-wide text-electric/80">Разбор задачи</div>
-        <p className="mt-1.5 text-sm leading-6 text-slate-200">{lesson.businessContext}</p>
-        <p className="mt-2 text-sm leading-6 text-slate-400">{lesson.explanation}</p>
+      {/* Что нужно сделать — видно всегда, даже опытным; тумблер прячет объяснения */}
+      <div className="rounded-2xl border border-electric/20 bg-electric/[0.05] p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-electric/80">Что нужно сделать</div>
+            <p className="mt-1 text-sm leading-6 text-slate-100">{lesson.learningGoal}</p>
+          </div>
+          <button
+            onClick={() => setExpertMode(!expertMode)}
+            title={expertMode ? 'Показать подробные объяснения' : 'Скрыть объяснения (режим эксперта)'}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.06] px-2.5 py-1.5 text-[11px] font-semibold text-slate-200 transition hover:bg-white/[0.12]"
+          >
+            {expertMode ? (
+              <>
+                <BookOpen size={13} /> Подробно
+              </>
+            ) : (
+              <>
+                <EyeOff size={13} /> Кратко
+              </>
+            )}
+          </button>
+        </div>
         {lesson.successCriteria.length > 0 && (
           <ul className="mt-3 space-y-1.5">
             {lesson.successCriteria.map((criterion) => (
@@ -561,6 +584,19 @@ export function SqlQuestWorkspace() {
           </ul>
         )}
       </div>
+
+      {!expertMode && (
+        <>
+          <SqlPrimer />
+          <SqlDemonstration concept={lesson.sqlConcept} />
+          <SqlBreakdown sql={lesson.starterSql} />
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-electric/80">Зачем это в жизни</div>
+            <p className="mt-1.5 text-sm leading-6 text-slate-200">{lesson.businessContext}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-400">{lesson.explanation}</p>
+          </div>
+        </>
+      )}
 
       {!unlocked && (
         <div className="flex items-center gap-2 rounded-md border border-white/10 bg-black/20 p-3 text-sm text-slate-400">
