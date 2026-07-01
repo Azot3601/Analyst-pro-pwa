@@ -20,6 +20,7 @@
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lang-sql": "^6.8.0",
+    "@fontsource-variable/fraunces": "^5.2.9",
     "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
     "@uiw/react-codemirror": "^4.23.13",
     "ajv": "^8.17.1",

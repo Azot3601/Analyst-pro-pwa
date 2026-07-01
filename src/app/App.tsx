@@ -22,6 +22,7 @@ const nav = [
 export function App() {
   const location = useLocation();
   const { theme, setTheme } = useAppStore();
+  const reducedMotion = useAppStore((s) => s.reducedMotion);
   const isLight = theme === 'light';
 
   useEffect(() => {
@@ -29,16 +30,41 @@ export function App() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('reduced-motion', reducedMotion);
+  }, [reducedMotion]);
+
   return (
     <div className={isLight ? 'light' : 'dark'}>
-      <div className="min-h-screen text-slate-100">
+      <div className="relative min-h-screen text-slate-100">
+        {/* Деревни Permalith по бокам: картинка по краям, тёмная вуаль в центре. */}
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 -z-20 bg-cover bg-center"
+          style={{ backgroundImage: "url('/permalith-bg.png')", filter: 'brightness(0.9) saturate(1.05)' }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 -z-10"
+          style={{
+            background:
+              'linear-gradient(90deg, rgba(20,18,30,0.12) 0%, rgba(20,18,30,0.30) 9%, rgba(20,18,30,0.90) 27%, rgba(20,18,30,0.93) 73%, rgba(20,18,30,0.30) 91%, rgba(20,18,30,0.12) 100%)'
+          }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 -z-10"
+          style={{ background: 'linear-gradient(180deg, rgba(20,18,30,0.45) 0%, rgba(20,18,30,0) 22%, rgba(20,18,30,0) 80%, rgba(20,18,30,0.5) 100%)' }}
+        />
         <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 border-r border-white/[0.06] bg-graphite/70 p-5 backdrop-blur-xl lg:flex lg:flex-col">
           <NavLink to="/" className="mb-9 flex items-center gap-3">
             <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-electric to-mentor text-lg font-black text-ink shadow-lift">
-              AP
+              P
             </div>
             <div>
-              <div className="text-lg font-extrabold tracking-tight">Аналитик Pro</div>
+              <div className="permalith text-2xl" data-text="Permalith">
+                Permalith
+              </div>
               <div className="text-xs text-slate-400">Тренажёр системного аналитика</div>
             </div>
           </NavLink>

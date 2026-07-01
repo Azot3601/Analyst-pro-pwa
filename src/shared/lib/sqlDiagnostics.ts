@@ -86,7 +86,7 @@ export function createSqlDiagnostic({
     extraRows,
     likelyCause,
     softHint,
-    companionHint: companionError ?? 'Наставник молча показывает на условие запроса: где-то там спряталась ошибка.',
+    companionHint: companionError ?? 'Софи кивает на условие запроса: где-то там притаилась ошибка.',
     relatedKnowledgeId: relatedKnowledgeIds[0]
   };
 }

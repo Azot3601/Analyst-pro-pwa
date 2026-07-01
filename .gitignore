@@ -68,3 +68,7 @@ $RECYCLE.BIN/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Root art dumps (working copies live in public/)
+/Elf sofi.png
+/background for the website.png

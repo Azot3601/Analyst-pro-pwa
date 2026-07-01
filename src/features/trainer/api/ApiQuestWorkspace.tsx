@@ -38,6 +38,7 @@ import { simulateApiRequest, type ApiResponse } from '../../../shared/lib/apiSim
 import { Button } from '../../../shared/ui/Button';
 import { Panel } from '../../../shared/ui/Panel';
 import { GlossaryText } from '../../knowledge/GlossaryText';
+import { playError, playHint, playSuccess } from '../../../shared/lib/audio';
 
 type Props = { domain: ApiTaskDomain };
 type RestDraft = {
@@ -596,6 +597,8 @@ export function ApiQuestWorkspace({ domain }: Props) {
 
   const finishCheck = async (check: ApiQuestCheckResult) => {
     setResult(check);
+    if (check.ok) playSuccess();
+    else playError();
     await recordApiTaskAttempt(task.id, domain);
     if (check.ok) {
       const progress = await solveApiTask(task.id, domain);
@@ -662,6 +665,7 @@ export function ApiQuestWorkspace({ domain }: Props) {
     if (!hint) return;
     const progress = await revealApiTaskHint(task.id, hint.id, domain);
     setRevealedHintIds(progress.revealedHints[task.id] ?? []);
+    playHint();
   };
 
   const editor =

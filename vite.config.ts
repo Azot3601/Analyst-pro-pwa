@@ -8,8 +8,8 @@ export default {
       registerType: 'autoUpdate',
       includeAssets: ['icons/icon.svg', 'offline.html'],
       manifest: {
-        name: 'Аналитик Pro',
-        short_name: 'Аналитик Pro',
+        name: 'Permalith',
+        short_name: 'Permalith',
         description: 'Локальный PWA-тренажёр hard skills системного аналитика',
         theme_color: '#14121e',
         background_color: '#14121e',
@@ -46,6 +46,7 @@ export default {
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json,wasm}'],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: ({ request, sameOrigin }) =>

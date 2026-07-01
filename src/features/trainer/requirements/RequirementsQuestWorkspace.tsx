@@ -24,6 +24,7 @@ import {
 import type { ApiQuestCheckResult } from '../../../shared/lib/apiQuestCheckers';
 import { Button } from '../../../shared/ui/Button';
 import { Panel } from '../../../shared/ui/Panel';
+import { playError, playHint, playSuccess } from '../../../shared/lib/audio';
 
 const labelOptions = Object.entries(statementLabels) as Array<[StatementLabel, string]>;
 
@@ -158,6 +159,8 @@ export function RequirementsQuestWorkspace() {
       check = checkStory({ roleId, clauseIds, edgeCaseIds: edgeIds }, task.rule);
     }
     setResult(check);
+    if (check.ok) playSuccess();
+    else playError();
     if (check.ok && !solvedIds.includes(task.id)) {
       await markTaskSolved(task.id);
       setSolvedIds((prev) => Array.from(new Set([...prev, task.id])));
@@ -340,7 +343,7 @@ export function RequirementsQuestWorkspace() {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Button onClick={() => void runCheck()}>Проверить</Button>
             {revealedHints < task.hints.length && (
-              <Button variant="soft" onClick={() => setRevealedHints((value) => value + 1)}>
+              <Button variant="soft" onClick={() => { setRevealedHints((value) => value + 1); playHint(); }}>
                 <Lightbulb size={15} /> Подсказка ({revealedHints}/{task.hints.length})
               </Button>
             )}

@@ -11,7 +11,7 @@ describe('App', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getAllByText('Аналитик Pro')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Permalith')[0]).toBeInTheDocument();
     expect(screen.getAllByText('Тренажёр').length).toBeGreaterThan(0);
   });
 });

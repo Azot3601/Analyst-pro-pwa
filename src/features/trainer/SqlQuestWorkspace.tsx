@@ -13,8 +13,13 @@ import {
   Sparkles,
   Table2
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { useAppStore } from '../../app/store';
+import { SophieAvatar } from '../../shared/ui/SophieAvatar';
+import type { SophieState } from '../../shared/ui/SophiePortrait';
+import { mentor } from '../../data/mentor';
 import {
   getNextRankForXp,
   getRankForXp,
@@ -42,6 +47,7 @@ import { compareSqlRows, type SqlRow } from '../../shared/lib/sqlChecker';
 import { Button } from '../../shared/ui/Button';
 import { Panel } from '../../shared/ui/Panel';
 import { runSql } from './useSqlRunner';
+import { playError, playLevelUp, playSuccess } from '../../shared/lib/audio';
 
 type CheckState = 'idle' | 'success' | 'error';
 type MobileTab = 'sql' | 'task' | 'data' | 'hints' | 'theory';
@@ -66,6 +72,7 @@ const mobileTabs: Array<{ id: MobileTab; label: string }> = [
 ];
 
 function DataTable({ columns, rows }: { columns: string[]; rows: SqlRow[] }) {
+  const reduced = useAppStore((s) => s.reducedMotion);
   return (
     <div className="overflow-auto rounded-md border border-white/10">
       <table className="min-w-full border-collapse text-left text-xs">
@@ -80,16 +87,47 @@ function DataTable({ columns, rows }: { columns: string[]; rows: SqlRow[] }) {
         </thead>
         <tbody>
           {rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className="odd:bg-white/[0.025]">
+            <motion.tr
+              key={rowIndex}
+              className="odd:bg-white/[0.025]"
+              initial={reduced ? false : { opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.24, delay: reduced ? 0 : Math.min(rowIndex * 0.045, 0.6) }}
+            >
               {columns.map((column) => (
                 <td key={column} className="border-b border-white/5 px-3 py-2 font-mono text-slate-300">
                   {row[column] === null ? <span className="text-slate-500">NULL</span> : String(row[column])}
                 </td>
               ))}
-            </tr>
+            </motion.tr>
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+const sophieStateFromFeedback = (state: SqlFeedback['state']): SophieState =>
+  state === 'success' ? 'happy' : state === 'error' ? 'encouraging' : 'idle';
+
+const sophieLine = (state: SqlFeedback['state']) =>
+  state === 'success'
+    ? 'Чисто сработано. Архив вспомнил правду — ещё одна лампа в городе зажглась.'
+    : state === 'error'
+      ? 'Почти. Глянь ещё раз на условие — одно слово порой решает всё.'
+      : mentor.tagline;
+
+function MentorCard({ feedback }: { feedback: SqlFeedback }) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-electric/20 bg-gradient-to-br from-electric/[0.1] to-transparent p-3">
+      <div className="shrink-0">
+        <SophieAvatar state={sophieStateFromFeedback(feedback.state)} size={84} />
+      </div>
+      <div className="min-w-0">
+        <div className="font-display text-sm font-bold text-slate-50">{mentor.name}</div>
+        <div className="text-[10px] uppercase tracking-wide text-electric/80">{mentor.title}</div>
+        <p className="mt-1 text-xs leading-5 text-slate-300">{sophieLine(feedback.state)}</p>
+      </div>
     </div>
   );
 }
@@ -144,7 +182,7 @@ function CompactRank({ quest, feedback }: { quest: SqlQuestProgress; feedback: S
         <Sparkles size={16} className="text-amber" />
       </div>
       <div className="mt-2 h-1.5 rounded-full bg-black/30">
-        <div className="h-1.5 rounded-full bg-amber" style={{ width: `${progressToNext}%` }} />
+        <div className="h-1.5 rounded-full bg-amber transition-[width] duration-700 ease-out" style={{ width: `${progressToNext}%` }} />
       </div>
       {feedback.state !== 'idle' && (
         <p className="mt-2 text-xs leading-5 text-slate-300">
@@ -316,10 +354,19 @@ function HintsPanel({
       {revealedHints.length > 0 ? (
         <div className="space-y-2">
           {revealedHints.map((hint, index) => (
-            <div key={hint} className="rounded-md border border-white/10 bg-white/[0.04] p-2.5">
-              <div className="mb-1 text-xs font-semibold text-slate-100">Подсказка {index + 1}</div>
-              <p className="text-xs leading-5 text-slate-400">{hint}</p>
-            </div>
+            <motion.div
+              key={hint}
+              initial={{ opacity: 0, scaleY: 0.8, y: -4 }}
+              animate={{ opacity: 1, scaleY: 1, y: 0 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
+              style={{ transformOrigin: 'top' }}
+              className="rounded-md border border-amber/20 bg-parchment/[0.06] p-2.5"
+            >
+              <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-amber">
+                <Lightbulb size={12} /> {mentor.name}, подсказка {index + 1}
+              </div>
+              <p className="text-xs leading-5 text-slate-300">{hint}</p>
+            </motion.div>
           ))}
         </div>
       ) : (
@@ -433,6 +480,8 @@ export function SqlQuestWorkspace() {
       if (check.ok) {
         const { progress: solvedProgress, xpAwarded } = await solveSqlQuestLesson(lesson);
         setProgress(solvedProgress);
+        if (solvedProgress.sqlQuest?.rankId !== quest.rankId) playLevelUp();
+        else playSuccess();
         setFeedback({
           state: 'success',
           message:
@@ -441,6 +490,7 @@ export function SqlQuestWorkspace() {
               : `Результат совпадает с эталоном. XP уже начислен. ${lesson.successStory}`
         });
       } else {
+        playError();
         setFeedback({
           state: 'error',
           message: 'Результат отличается от эталона.',
@@ -454,6 +504,7 @@ export function SqlQuestWorkspace() {
         });
       }
     } catch (error) {
+      playError();
       setResultRows([]);
       setFeedback({
         state: 'error',
@@ -597,7 +648,7 @@ export function SqlQuestWorkspace() {
               action={<span className="text-xs text-slate-400">{progressPercent}%</span>}
             >
               <div className="mb-3 h-1.5 rounded-full bg-white/10">
-                <div className="h-1.5 rounded-full bg-electric" style={{ width: `${progressPercent}%` }} />
+                <div className="h-1.5 rounded-full bg-electric transition-[width] duration-700 ease-out" style={{ width: `${progressPercent}%` }} />
               </div>
               <QuestLessonList quest={quest} currentLessonId={lesson.id} onSelect={(next) => setLessonId(next.id)} />
             </Panel>
@@ -612,6 +663,7 @@ export function SqlQuestWorkspace() {
         </main>
 
         <aside data-testid="quest-aside" className="hidden min-w-0 space-y-3 xl:block">
+          <MentorCard feedback={feedback} />
           <CompactRank quest={quest} feedback={feedback} />
           <DataPanel
             lesson={lesson}
@@ -650,6 +702,7 @@ export function SqlQuestWorkspace() {
         )}
         {mobileTab === 'hints' && (
           <div className="space-y-3">
+            <MentorCard feedback={feedback} />
             <CompactRank quest={quest} feedback={feedback} />
             <HintsPanel
               lesson={lesson}
