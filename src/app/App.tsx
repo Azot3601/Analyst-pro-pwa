@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, BrainCircuit, Gauge, Home, Moon, Settings, Sun, TerminalSquare, Wrench } from 'lucide-react';
+import { BookOpen, BrainCircuit, Gauge, GraduationCap, Home, Moon, Settings, Sun, TerminalSquare, Wrench } from 'lucide-react';
 import { useEffect } from 'react';
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { KnowledgePage } from '../pages/KnowledgePage';
 import { HomePage } from '../pages/HomePage';
+import { ProfessionPage } from '../pages/ProfessionPage';
 import { ProgressPage } from '../pages/ProgressPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { ToolkitPage } from '../pages/ToolkitPage';
@@ -12,6 +13,7 @@ import { useAppStore } from './store';
 
 const nav = [
   { to: '/', label: 'Главная', icon: Home },
+  { to: '/profession', label: 'Профессия', icon: GraduationCap },
   { to: '/trainer', label: 'Тренажёр', icon: TerminalSquare },
   { to: '/knowledge', label: 'База знаний', icon: BrainCircuit },
   { to: '/toolkit', label: 'Инструментарий', icon: Wrench },
@@ -113,6 +115,7 @@ export function App() {
               >
                 <Routes location={location}>
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/profession" element={<ProfessionPage />} />
                   <Route path="/trainer" element={<TrainerPage />} />
                   <Route path="/knowledge" element={<KnowledgePage />} />
                   <Route path="/toolkit" element={<ToolkitPage />} />
@@ -124,7 +127,7 @@ export function App() {
           </main>
         </div>
 
-        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 gap-1 border-t border-white/[0.06] bg-graphite/85 px-2 py-2 backdrop-blur-xl lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 gap-1 border-t border-white/[0.06] bg-graphite/85 px-2 py-2 backdrop-blur-xl lg:hidden">
           {nav.map((item) => {
             const Icon = item.icon;
             return (
