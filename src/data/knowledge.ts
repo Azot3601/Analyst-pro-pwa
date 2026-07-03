@@ -117,6 +117,15 @@ const titles = [
   ,'Допущение'
   ,'Стейкхолдер'
   ,'Scope'
+  ,'Элиситация'
+  ,'Scope creep'
+  ,'Kano'
+  ,'Baseline'
+  ,'Управление изменениями'
+  ,'Прототип'
+  ,'Бизнес-правила'
+  ,'Атрибуты качества'
+  ,'MVP'
 ];
 
 const slugOverrides: Record<string, string> = {

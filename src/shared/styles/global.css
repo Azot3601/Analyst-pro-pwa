@@ -113,6 +113,64 @@ select {
     #f6f4fb;
 }
 
+/* Светлая тема: переопределяем «тёмные» утилиты, чтобы всё читалось.
+   Специфичность .light .class (0,2,0) выше одиночной утилиты (0,1,0). */
+.light .text-white { color: #1d1830; }
+.light .text-slate-50 { color: #221c34; }
+.light .text-slate-100 { color: #2a2540; }
+.light .text-slate-200 { color: #332e4b; }
+.light .text-slate-300 { color: #453f60; }
+.light .text-slate-400 { color: #5e5880; }
+.light .text-slate-500 { color: #7a7498; }
+
+.light .bg-white\/\[0\.02\],
+.light .bg-white\/\[0\.03\],
+.light .bg-white\/\[0\.04\],
+.light .bg-white\/\[0\.055\],
+.light .bg-white\/\[0\.06\] {
+  background-color: rgba(30, 22, 60, 0.045);
+}
+.light .bg-white\/\[0\.08\],
+.light .bg-white\/10 {
+  background-color: rgba(30, 22, 60, 0.07);
+}
+.light .bg-white\/\[0\.12\],
+.light .bg-white\/\[0\.14\],
+.light .bg-white\/\[0\.15\] {
+  background-color: rgba(30, 22, 60, 0.1);
+}
+
+.light .bg-ink,
+.light .bg-ink\/40,
+.light .bg-ink\/50,
+.light .bg-ink\/60,
+.light .bg-ink\/70,
+.light .bg-ink\/78 {
+  background-color: #efe9f6;
+}
+.light .bg-graphite\/70,
+.light .bg-graphite\/85,
+.light .bg-graphite\/92,
+.light .bg-graphite\/95 {
+  background-color: rgba(242, 237, 249, 0.9);
+}
+.light .bg-black\/15,
+.light .bg-black\/20,
+.light .bg-black\/25,
+.light .bg-black\/30,
+.light .bg-black\/40 {
+  background-color: rgba(30, 22, 60, 0.06);
+}
+
+.light .border-white\/5 { border-color: rgba(30, 22, 60, 0.08); }
+.light .border-white\/10 { border-color: rgba(30, 22, 60, 0.12); }
+.light .border-white\/20 { border-color: rgba(30, 22, 60, 0.18); }
+.light .border-white\/\[0\.06\] { border-color: rgba(30, 22, 60, 0.09); }
+.light .border-white\/\[0\.08\] { border-color: rgba(30, 22, 60, 0.12); }
+
+/* Бумажное зерно на светлой теме почти не нужно — гасим, чтобы не мутить. */
+.light body::before { opacity: 0.02; }
+
 /* Permalith — киберпанк-перелив (iridescent) с глитч-искажениями */
 .permalith {
   position: relative;

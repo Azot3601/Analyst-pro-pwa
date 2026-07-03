@@ -7,6 +7,7 @@ import {
   ChevronDown,
   CircleAlert,
   Database,
+  EyeOff,
   FileCode2,
   KeyRound,
   LockKeyhole,
@@ -39,6 +40,8 @@ import { Button } from '../../../shared/ui/Button';
 import { Panel } from '../../../shared/ui/Panel';
 import { GlossaryText } from '../../knowledge/GlossaryText';
 import { playError, playHint, playSuccess } from '../../../shared/lib/audio';
+import { useAppStore } from '../../../app/store';
+import { RestBreakdown } from './RestBreakdown';
 
 type Props = { domain: ApiTaskDomain };
 type RestDraft = {
@@ -595,6 +598,9 @@ export function ApiQuestWorkspace({ domain }: Props) {
     void setLastApiTask(next.id, domain);
   };
 
+  const expertMode = useAppStore((s) => s.expertMode);
+  const setExpertMode = useAppStore((s) => s.setExpertMode);
+
   const finishCheck = async (check: ApiQuestCheckResult) => {
     setResult(check);
     if (check.ok) playSuccess();
@@ -723,19 +729,41 @@ export function ApiQuestWorkspace({ domain }: Props) {
             {domainTasks.map((item, index) => <option key={item.id} value={item.id}>{index + 1}. {item.title}</option>)}
           </select>
         </label>
-        {domain === 'rest' && task.id === domainTasks[0].id && <RestOnboarding />}
         <section className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <div className="text-[10px] uppercase tracking-[0.14em] text-electric">{domainTitles[domain]}</div>
               <h1 className="mt-1 text-lg font-bold text-slate-50">{task.title}</h1>
             </div>
-            <span className="rounded-md bg-white/10 px-2 py-1 text-xs text-slate-300">{task.level} · {task.estimatedFocus}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="rounded-md bg-white/10 px-2 py-1 text-xs text-slate-300">{task.level} · {task.estimatedFocus}</span>
+              <button
+                onClick={() => setExpertMode(!expertMode)}
+                title={expertMode ? 'Показать подробные объяснения' : 'Скрыть объяснения (режим эксперта)'}
+                className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.06] px-2 py-1 text-[11px] font-semibold text-slate-200 transition hover:bg-white/[0.12]"
+              >
+                {expertMode ? (
+                  <>
+                    <BookOpen size={12} /> Подробно
+                  </>
+                ) : (
+                  <>
+                    <EyeOff size={12} /> Кратко
+                  </>
+                )}
+              </button>
+            </div>
           </div>
           <p className="mt-2 text-sm leading-5 text-slate-300"><GlossaryText>{task.learningGoal}</GlossaryText></p>
           <p className="mt-2 text-xs text-amber">{task.shortIntro}</p>
         </section>
-        {task.kind === 'rest' && <RestBeforeSolution key={task.id} task={task} />}
+        {!expertMode && (
+          <>
+            {domain === 'rest' && task.id === domainTasks[0].id && <RestOnboarding />}
+            {task.kind === 'rest' && <RestBreakdown task={task} />}
+            {task.kind === 'rest' && <RestBeforeSolution key={task.id} task={task} />}
+          </>
+        )}
         <Panel title="Рабочая область">{editor}</Panel>
         <Panel title="Результат и диагностика" action={<Database size={16} className="text-electric" />}>
           <DiagnosticPanel result={result} successMessage={task.successMessage} />
