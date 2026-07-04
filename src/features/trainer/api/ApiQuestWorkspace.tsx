@@ -20,6 +20,7 @@ import { apiQuestTasks, restTestValues, type ApiQuestTask } from '../../../data/
 import {
   getProgress,
   recordApiTaskAttempt,
+  recordReview,
   revealApiTaskHint,
   setLastApiTask,
   solveApiTask,
@@ -42,6 +43,7 @@ import { GlossaryText } from '../../knowledge/GlossaryText';
 import { playError, playHint, playSuccess } from '../../../shared/lib/audio';
 import { useAppStore } from '../../../app/store';
 import { RestBreakdown } from './RestBreakdown';
+import { apiConceptId } from '../../practice/reviewEngine';
 
 type Props = { domain: ApiTaskDomain };
 type RestDraft = {
@@ -605,6 +607,7 @@ export function ApiQuestWorkspace({ domain }: Props) {
     setResult(check);
     if (check.ok) playSuccess();
     else playError();
+    void recordReview(apiConceptId(domain), check.ok).catch(() => undefined);
     await recordApiTaskAttempt(task.id, domain);
     if (check.ok) {
       const progress = await solveApiTask(task.id, domain);

@@ -24,6 +24,7 @@ import type { SophieState } from '../../shared/ui/SophiePortrait';
 import { mentor } from '../../data/mentor';
 import { SqlDemonstration } from './SqlDemonstration';
 import { SqlBreakdown, SqlPrimer } from './SqlBreakdown';
+import { sqlConceptId } from '../practice/reviewEngine';
 import {
   getNextRankForXp,
   getRankForXp,
@@ -40,6 +41,7 @@ import {
   defaultProgress,
   defaultSqlQuestProgress,
   getProgress,
+  recordReview,
   recordSqlQuestAttempt,
   revealSqlQuestHint,
   setSqlQuestLocation,
@@ -429,10 +431,11 @@ function TheoryDetails({ lesson }: { lesson: SqlQuestLesson }) {
   );
 }
 
-export function SqlQuestWorkspace() {
+export function SqlQuestWorkspace({ initialLessonId }: { initialLessonId?: string } = {}) {
+  const requested = initialLessonId && sqlQuestLessons.some((l) => l.id === initialLessonId) ? initialLessonId : undefined;
   const [progress, setProgress] = useState<UserProgress>(defaultProgress);
   const quest = progress.sqlQuest ?? defaultSqlQuestProgress;
-  const [lessonId, setLessonId] = useState(quest.lastSqlLessonId ?? sqlQuestLessons[0].id);
+  const [lessonId, setLessonId] = useState(requested ?? quest.lastSqlLessonId ?? sqlQuestLessons[0].id);
   const lesson = sqlQuestLessons.find((item) => item.id === lessonId) ?? sqlQuestLessons[0];
   const chapter = getSqlQuestChapter(lesson.chapterId);
   const [sqlValue, setSqlValue] = useState(lesson.starterSql);
@@ -448,10 +451,10 @@ export function SqlQuestWorkspace() {
     getProgress()
       .then((saved) => {
         setProgress(saved);
-        setLessonId(saved.sqlQuest?.lastSqlLessonId ?? sqlQuestLessons[0].id);
+        if (!requested) setLessonId(saved.sqlQuest?.lastSqlLessonId ?? sqlQuestLessons[0].id);
       })
       .catch(() => setProgress(defaultProgress));
-  }, []);
+  }, [requested]);
 
   useEffect(() => {
     setSqlValue(lesson.starterSql);
@@ -483,6 +486,8 @@ export function SqlQuestWorkspace() {
       const rows = await runSql(sqlValue);
       const check = compareSqlRows(rows, lesson.expectedRows, lesson.orderMatters ?? false);
       setResultRows(rows);
+
+      void recordReview(sqlConceptId(lesson.sqlConcept), check.ok).catch(() => undefined);
 
       if (check.ok) {
         const { progress: solvedProgress, xpAwarded } = await solveSqlQuestLesson(lesson);
@@ -657,6 +662,20 @@ export function SqlQuestWorkspace() {
           <div className="mt-3">
             <DiagnosticBlock diagnostic={feedback.diagnostic} lesson={lesson} />
           </div>
+        )}
+        {feedback.state === 'success' && (
+          <details className="mt-3 rounded-xl border border-electric/20 bg-electric/[0.05] p-3">
+            <summary className="cursor-pointer text-sm font-semibold text-electric">
+              Эталон {mentor.name}: сравни со своим решением
+            </summary>
+            <pre className="mt-2 overflow-x-auto rounded-md bg-black/30 p-2.5 font-mono text-xs leading-5 text-slate-200">
+              {lesson.solutionSql}
+            </pre>
+            <p className="mt-2 text-xs leading-5 text-slate-400">
+              Чем твой запрос отличается от эталона? Разница в стиле — нормально; разница в логике — повод перечитать
+              теорию. Так закрепляется навык.
+            </p>
+          </details>
         )}
       </section>
 

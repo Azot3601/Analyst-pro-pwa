@@ -612,7 +612,65 @@ function RiskMatrix({ className }: SvgProps): ReactElement {
   );
 }
 
+function SdlcLifecycle({ className }: SvgProps): ReactElement {
+  const phases = ['Анализ', 'Дизайн', 'Разработка', 'Тесты', 'Релиз', 'Поддержка'];
+  const colors = [C.electric, C.mentor, C.electric, C.amber, C.success, C.mentor];
+  return (
+    <Frame className={className} viewBox="0 0 640 200" label="Жизненный цикл разработки (SDLC)">
+      <text x={24} y={30} fill={C.text} fontSize={13} fontWeight={700}>SDLC: этапы жизни системы</text>
+      {phases.map((p, i) => {
+        const x = 14 + i * 104;
+        return (
+          <g key={p}>
+            <rect x={x} y={70} width={92} height={40} rx={9} fill={C.surface2} stroke={colors[i]} strokeWidth={1.4} />
+            <text x={x + 46} y={94} textAnchor="middle" fill={C.text} fontSize={11} fontWeight={600}>{p}</text>
+            {i < phases.length - 1 && (
+              <line x1={x + 92} y1={90} x2={x + 104} y2={90} stroke={C.sub} strokeWidth={1.6} markerEnd="url(#kd-arrow)" />
+            )}
+          </g>
+        );
+      })}
+      <path d="M 570 114 q 0 46 -274 46 q -274 0 -274 -40" fill="none" stroke={C.sub} strokeWidth={1.4} strokeDasharray="5 4" markerEnd="url(#kd-arrow)" />
+      <text x={296} y={178} textAnchor="middle" fill={C.sub} fontSize={11}>цикл повторяется: система живёт и развивается</text>
+    </Frame>
+  );
+}
+
+function ScrumSprint({ className }: SvgProps): ReactElement {
+  const steps: Array<[string, string]> = [
+    ['Product\nBacklog', C.electric],
+    ['Планирование', C.mentor],
+    ['Спринт\n(Daily)', C.success],
+    ['Обзор', C.amber],
+    ['Ретро', C.mentor]
+  ];
+  return (
+    <Frame className={className} viewBox="0 0 640 210" label="Спринт в Scrum">
+      <text x={24} y={28} fill={C.text} fontSize={13} fontWeight={700}>Scrum: работа короткими спринтами (1–4 недели)</text>
+      {steps.map(([label, color], i) => {
+        const x = 18 + i * 122;
+        const lines = label.split('\n');
+        return (
+          <g key={label}>
+            <rect x={x} y={64} width={106} height={48} rx={10} fill={C.surface2} stroke={color} strokeWidth={1.4} />
+            {lines.map((ln, li) => (
+              <text key={ln} x={x + 53} y={lines.length > 1 ? 84 + li * 15 : 92} textAnchor="middle" fill={C.text} fontSize={11} fontWeight={600}>{ln}</text>
+            ))}
+            {i < steps.length - 1 && (
+              <line x1={x + 106} y1={88} x2={x + 122} y2={88} stroke={C.sub} strokeWidth={1.6} markerEnd="url(#kd-arrow)" />
+            )}
+          </g>
+        );
+      })}
+      <path d="M 570 116 q 0 44 -276 44 q -276 0 -276 -42" fill="none" stroke={C.sub} strokeWidth={1.4} strokeDasharray="5 4" markerEnd="url(#kd-arrow)" />
+      <text x={294} y={186} textAnchor="middle" fill={C.sub} fontSize={11}>инкремент готов → берём следующий кусок бэклога</text>
+    </Frame>
+  );
+}
+
 export const knowledgeDiagrams: Record<string, { title: string; Component: (props: SvgProps) => ReactElement }> = {
+  'sdlc-lifecycle': { title: 'Жизненный цикл (SDLC)', Component: SdlcLifecycle },
+  'scrum-sprint': { title: 'Спринт в Scrum', Component: ScrumSprint },
   'rest-request-response': { title: 'Запрос и ответ', Component: RequestResponse },
   'http-status-map': { title: 'Группы статус-кодов', Component: StatusMap },
   'endpoint-anatomy': { title: 'Анатомия эндпоинта', Component: EndpointAnatomy },

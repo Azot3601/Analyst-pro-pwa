@@ -12,7 +12,8 @@ import {
   requirementsTasks,
   type RequirementsTask
 } from '../../../data/requirementsQuest';
-import { getProgress, markTaskSolved } from '../../progress/progressDb';
+import { getProgress, markTaskSolved, recordReview } from '../../progress/progressDb';
+import { requirementsConceptId } from '../../practice/reviewEngine';
 import {
   checkClassification,
   checkQuestions,
@@ -161,6 +162,7 @@ export function RequirementsQuestWorkspace() {
     setResult(check);
     if (check.ok) playSuccess();
     else playError();
+    void recordReview(requirementsConceptId(task.kind), check.ok).catch(() => undefined);
     if (check.ok && !solvedIds.includes(task.id)) {
       await markTaskSolved(task.id);
       setSolvedIds((prev) => Array.from(new Set([...prev, task.id])));

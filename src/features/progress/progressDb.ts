@@ -8,6 +8,7 @@ import {
   type SqlQuestLesson
 } from '../../data/sqlQuest';
 import type { UserProgress } from '../../entities/schemas';
+import { applyReviewResult, weakZonesFrom } from '../practice/reviewEngine';
 
 export type SqlQuestProgress = NonNullable<UserProgress['sqlQuest']>;
 export type ApiTaskDomain = 'rest' | 'json' | 'openapi' | 'integration';
@@ -42,7 +43,9 @@ export const defaultProgress: UserProgress = {
     Требования: 20,
     НФТ: 8
   },
-  weakZones: ['Идемпотентность', 'JSON Schema', 'SLA/SLO'],
+  // Слабые зоны считаются из реальных результатов повторения — не выдумываются.
+  weakZones: [],
+  reviews: {},
   streak: 0,
   notes: {},
   sqlQuest: defaultSqlQuestProgress,
@@ -92,6 +95,7 @@ export function normalizeProgress(progress: UserProgress): UserProgress {
     lastTaskIdsByDomain: progress.lastTaskIdsByDomain ?? {},
     skillLevels: progress.skillLevels ?? defaultProgress.skillLevels,
     weakZones: progress.weakZones ?? defaultProgress.weakZones,
+    reviews: progress.reviews ?? {},
     notes: progress.notes ?? {},
     sqlQuest: normalizeSqlQuestProgress(progress.sqlQuest)
   };
@@ -196,6 +200,14 @@ export function solveApiTask(taskId: string, domain: ApiTaskDomain) {
 
 export function setLastApiTask(taskId: string, domain: ApiTaskDomain) {
   return updateProgress((progress) => withApiLocation(progress, taskId, domain));
+}
+
+/** Записать результат повторения концепта: двигает лесенку интервалов и слабые зоны. */
+export function recordReview(conceptId: string, pass: boolean) {
+  return updateProgress((progress) => {
+    const reviews = applyReviewResult(progress.reviews ?? {}, conceptId, pass);
+    return { ...progress, reviews, weakZones: weakZonesFrom(reviews) };
+  });
 }
 
 export async function markTaskSolved(taskId: string) {

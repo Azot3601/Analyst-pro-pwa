@@ -45,11 +45,19 @@ describe('sqlQuest lessons', () => {
     expect(broken).toEqual([]);
   });
 
-  it('starter SQL matches expected rows for every lesson', async () => {
+  it('solution SQL matches expected rows for every lesson', async () => {
     for (const lesson of sqlQuestLessons) {
-      const rows = await runLessonSql(lesson.starterSql);
+      const rows = await runLessonSql(lesson.solutionSql);
       const check = compareSqlRows(rows, lesson.expectedRows, lesson.orderMatters ?? false);
       expect(check.ok, lesson.id).toBe(true);
+    }
+  });
+
+  it('starter SQL is a scaffold, not the ready answer', () => {
+    for (const lesson of sqlQuestLessons) {
+      expect(lesson.starterSql, lesson.id).not.toBe(lesson.solutionSql);
+      // Каркас содержит «дырки»-комментарии, которые ученик должен заполнить.
+      expect(lesson.starterSql.includes('-- ?'), lesson.id).toBe(true);
     }
   });
 });

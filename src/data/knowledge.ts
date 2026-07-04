@@ -126,6 +126,14 @@ const titles = [
   ,'Бизнес-правила'
   ,'Атрибуты качества'
   ,'MVP'
+  ,'SDLC'
+  ,'Waterfall'
+  ,'Agile'
+  ,'Scrum'
+  ,'Kanban'
+  ,'Спринт'
+  ,'Бэклог'
+  ,'Definition of Done'
 ];
 
 const slugOverrides: Record<string, string> = {
@@ -189,6 +197,7 @@ const curatedNodes: Record<
       | 'whyItMatters'
       | 'walkthrough'
       | 'diagramId'
+      | 'selfCheck'
       | 'examples'
       | 'antiExamples'
       | 'related'

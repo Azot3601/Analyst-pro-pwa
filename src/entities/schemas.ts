@@ -68,6 +68,15 @@ export const knowledgeNodeSchema = z.object({
   whyItMatters: z.string().optional(),
   walkthrough: z.array(z.string()).optional(),
   diagramId: z.string().optional(),
+  // Вопрос-самопроверка в конце статьи (закрепление, как в учебнике).
+  selfCheck: z
+    .object({
+      question: z.string(),
+      options: z.array(z.string()),
+      answer: z.number().int().nonnegative(),
+      explain: z.string()
+    })
+    .optional(),
   examples: z.array(z.string()),
   antiExamples: z.array(z.string()),
   related: z.array(
@@ -108,6 +117,18 @@ export const userProgressSchema = z.object({
   lastTaskIdsByDomain: z.record(z.string(), z.string()).optional(),
   skillLevels: z.record(z.string(), z.number().min(0).max(100)),
   weakZones: z.array(z.string()),
+  // Интервальное повторение по микроконцептам (лесенка интервалов).
+  reviews: z
+    .record(
+      z.string(),
+      z.object({
+        strength: z.number().int().min(0),
+        dueAt: z.string(),
+        lapses: z.number().int().nonnegative(),
+        lastResult: z.enum(['pass', 'fail'])
+      })
+    )
+    .optional(),
   streak: z.number().int().nonnegative(),
   notes: z.record(z.string(), z.string()),
   sqlQuest: z

@@ -1,8 +1,10 @@
 import {
   AlertTriangle,
   BookOpen,
+  Check,
   ChevronDown,
   Clock,
+  HelpCircle,
   Lightbulb,
   ListChecks,
   Network,
@@ -68,6 +70,57 @@ function readingMinutes(node: KnowledgeNode): number {
 const scrollToSection = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
+
+type SelfCheckData = NonNullable<KnowledgeNode['selfCheck']>;
+
+function SelfCheck({ data }: { data: SelfCheckData }) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const answered = picked !== null;
+
+  return (
+    <section className="mt-8 rounded-2xl border border-amber/20 bg-amber/[0.05] p-4">
+      <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-amber/80">
+        <HelpCircle size={13} /> Проверь себя
+      </div>
+      <p className="text-sm font-medium leading-6 text-slate-100">{data.question}</p>
+      <div className="mt-3 space-y-2">
+        {data.options.map((option, index) => {
+          const isCorrect = index === data.answer;
+          const state = !answered ? 'idle' : isCorrect ? 'correct' : index === picked ? 'wrong' : 'idle';
+          return (
+            <button
+              key={option}
+              disabled={answered}
+              onClick={() => setPicked(index)}
+              className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm transition ${
+                state === 'correct'
+                  ? 'border-success/40 bg-success/10 text-success'
+                  : state === 'wrong'
+                    ? 'border-danger/40 bg-danger/10 text-danger'
+                    : 'border-white/10 bg-white/[0.03] text-slate-200 hover:bg-white/[0.06] disabled:hover:bg-white/[0.03]'
+              }`}
+            >
+              {answered && isCorrect ? (
+                <Check size={15} className="shrink-0" />
+              ) : (
+                <span className="grid size-5 shrink-0 place-items-center rounded-full border border-current text-[10px]">
+                  {String.fromCharCode(65 + index)}
+                </span>
+              )}
+              {option}
+            </button>
+          );
+        })}
+      </div>
+      {answered && (
+        <p className="mt-3 rounded-lg bg-black/20 p-2.5 text-xs leading-5 text-slate-300">
+          {picked === data.answer ? 'Верно! ' : 'Не совсем. '}
+          {data.explain}
+        </p>
+      )}
+    </section>
+  );
+}
 
 export function KnowledgePage() {
   const [params, setParams] = useSearchParams();
@@ -336,6 +389,8 @@ export function KnowledgePage() {
                 </div>
               </section>
             )}
+
+            {selected.selfCheck && <SelfCheck key={selected.id} data={selected.selfCheck} />}
           </div>
         </Panel>
 

@@ -1,9 +1,69 @@
-import { ArrowRight, CheckCircle2, Network, Play, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Megaphone, Network, Play, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { tasks } from '../data/tasks';
 import { knowledgeNodes } from '../data/knowledge';
+import { changelog, type ChangeTag } from '../data/changelog';
 import { Panel } from '../shared/ui/Panel';
 import { Button } from '../shared/ui/Button';
+
+const tagStyle: Record<ChangeTag, string> = {
+  Новое: 'bg-electric/15 text-electric',
+  Улучшено: 'bg-success/15 text-success',
+  Исправлено: 'bg-amber/15 text-amber'
+};
+
+function WhatsNew() {
+  return (
+    <Panel className="border-electric/15">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="grid size-8 place-items-center rounded-xl bg-electric/15 text-electric">
+          <Megaphone size={16} />
+        </span>
+        <div>
+          <h2 className="font-display text-base font-bold text-slate-50">Что нового</h2>
+          <p className="text-xs text-slate-400">Последние изменения — жми, чтобы потыкать</p>
+        </div>
+      </div>
+      <div className="space-y-4">
+        {changelog.map((rel) => (
+          <div key={rel.version}>
+            <div className="mb-1.5 flex items-center gap-2">
+              <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-slate-400">{rel.version}</span>
+              <span className="text-xs font-semibold text-slate-200">{rel.title}</span>
+            </div>
+            <ul className="space-y-1">
+              {rel.changes.map((c, i) => {
+                const inner = (
+                  <span className="flex items-start gap-2">
+                    <span className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${tagStyle[c.tag]}`}>
+                      {c.tag}
+                    </span>
+                    <span>{c.text}</span>
+                  </span>
+                );
+                return (
+                  <li key={i} className="text-sm leading-5 text-slate-300">
+                    {c.to ? (
+                      <Link
+                        to={c.to}
+                        className="group flex items-start justify-between gap-2 rounded-lg px-1 py-1 transition hover:bg-white/[0.05]"
+                      >
+                        {inner}
+                        <ArrowRight size={14} className="mt-0.5 shrink-0 text-slate-500 group-hover:text-electric" />
+                      </Link>
+                    ) : (
+                      <div className="px-1 py-1">{inner}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
 
 const skills = [
   { title: 'SQL', progress: 42, tone: 'bg-electric' },
@@ -16,6 +76,7 @@ const skills = [
 export function HomePage() {
   return (
     <div className="space-y-6">
+      <WhatsNew />
       <section className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
         <Panel className="overflow-hidden border-electric/15 bg-gradient-to-br from-electric/[0.14] via-mentor/[0.06] to-transparent p-0">
           <div className="relative p-6 md:p-8">

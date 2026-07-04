@@ -26,6 +26,9 @@ export type SqlQuestLesson = {
   businessContext: string;
   learningGoal: string;
   sqlConcept: string;
+  /** Готовый эталон: гарантирует expectedRows и показывается как разбор после решения. */
+  solutionSql: string;
+  /** Каркас с «дырками» для ученика — не готовый ответ. */
   starterSql: string;
   expectedRows: SqlRow[];
   orderMatters?: boolean;
@@ -135,7 +138,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Перед любым анализом нужно увидеть минимальный набор полей: идентификатор, статус и сумму заказа.',
     learningGoal: 'Научиться выбирать только нужные колонки и не тащить лишний шум.',
     sqlConcept: 'SELECT, FROM',
-    starterSql: 'SELECT id, status, total\nFROM orders\nORDER BY id\nLIMIT 3;',
+    solutionSql: "SELECT id, status, total\nFROM orders\nORDER BY id\nLIMIT 3;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nORDER BY -- ? поле сортировки\nLIMIT -- ? сколько строк;",
     expectedRows: [
       { id: 1001, status: 'paid', total: 5600 },
       { id: 1002, status: 'shipped', total: 2100 },
@@ -168,7 +172,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Поиск максимума через сортировку часто используется для sanity-check и поиска аномалий.',
     learningGoal: 'Закрепить ORDER BY DESC и LIMIT.',
     sqlConcept: 'ORDER BY, DESC, LIMIT',
-    starterSql: 'SELECT id, total\nFROM orders\nORDER BY total DESC\nLIMIT 1;',
+    solutionSql: "SELECT id, total\nFROM orders\nORDER BY total DESC\nLIMIT 1;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nORDER BY -- ? поле сортировки\nLIMIT -- ? сколько строк;",
     expectedRows: [{ id: 1005, total: 8300 }],
     orderMatters: true,
     tablesUsed: ['orders'],
@@ -197,7 +202,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'В реальной работе аналитик часто начинает расследование с последних событий или заказов.',
     learningGoal: 'Использовать сортировку по дате и ограничение результата.',
     sqlConcept: 'ORDER BY по дате, LIMIT',
-    starterSql: 'SELECT id, customer_id, created_at\nFROM orders\nORDER BY created_at DESC\nLIMIT 3;',
+    solutionSql: "SELECT id, customer_id, created_at\nFROM orders\nORDER BY created_at DESC\nLIMIT 3;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nORDER BY -- ? поле сортировки\nLIMIT -- ? сколько строк;",
     expectedRows: [
       { id: 1005, customer_id: 1, created_at: '2026-05-05' },
       { id: 1004, customer_id: 4, created_at: '2026-05-04' },
@@ -230,7 +236,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Статус заказа — бизнес-условие. Если фильтр неточный, дальше ломается весь анализ.',
     learningGoal: 'Закрепить WHERE для строкового статуса.',
     sqlConcept: 'WHERE',
-    starterSql: "SELECT id, status, total\nFROM orders\nWHERE status = 'paid'\nORDER BY id;",
+    solutionSql: "SELECT id, status, total\nFROM orders\nWHERE status = 'paid'\nORDER BY id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: orderedPaidRows,
     orderMatters: true,
     tablesUsed: ['orders'],
@@ -259,7 +266,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Комбинированные фильтры помогают сформировать точный операционный список.',
     learningGoal: 'Соединять IN, BETWEEN и AND.',
     sqlConcept: 'IN, BETWEEN, AND',
-    starterSql: "SELECT id, status, total\nFROM orders\nWHERE status IN ('paid', 'shipped')\n  AND total BETWEEN 1000 AND 6000\nORDER BY id;",
+    solutionSql: "SELECT id, status, total\nFROM orders\nWHERE status IN ('paid', 'shipped')\n  AND total BETWEEN 1000 AND 6000\nORDER BY id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { id: 1001, status: 'paid', total: 5600 },
       { id: 1002, status: 'shipped', total: 2100 }
@@ -291,7 +299,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Поиск по шаблону и NULL-check помогают расследовать дубли callback и качество интеграции.',
     learningGoal: 'Использовать LIKE и IS NOT NULL в расследовании.',
     sqlConcept: 'LIKE, IS NOT NULL',
-    starterSql: "SELECT id, order_id, idempotency_key\nFROM payments\nWHERE idempotency_key IS NOT NULL\n  AND idempotency_key LIKE 'pay-1003'\nORDER BY id;",
+    solutionSql: "SELECT id, order_id, idempotency_key\nFROM payments\nWHERE idempotency_key IS NOT NULL\n  AND idempotency_key LIKE 'pay-1003'\nORDER BY id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM payments\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { id: 3, order_id: 1003, idempotency_key: 'pay-1003' },
       { id: 4, order_id: 1003, idempotency_key: 'pay-1003' }
@@ -323,7 +332,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Агрегация по статусу даёт первое распределение процесса.',
     learningGoal: 'Использовать GROUP BY с COUNT и SUM.',
     sqlConcept: 'GROUP BY, COUNT, SUM',
-    starterSql: 'SELECT status, COUNT(*) AS cnt, SUM(total) AS total_sum\nFROM orders\nGROUP BY status\nORDER BY status;',
+    solutionSql: "SELECT status, COUNT(*) AS cnt, SUM(total) AS total_sum\nFROM orders\nGROUP BY status\nORDER BY status;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nGROUP BY -- ? поле группировки\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { status: 'cancelled', cnt: 1, total_sum: 1200 },
       { status: 'paid', cnt: 3, total_sum: 14880 },
@@ -356,7 +366,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'MIN, MAX и AVG помогают оценить масштаб данных и быстро найти ориентиры.',
     learningGoal: 'Использовать базовые агрегаты без группировки.',
     sqlConcept: 'MIN, MAX, AVG',
-    starterSql: 'SELECT MIN(total) AS min_total,\n  MAX(total) AS max_total,\n  ROUND(AVG(total), 1) AS avg_total\nFROM orders;',
+    solutionSql: "SELECT MIN(total) AS min_total,\n  MAX(total) AS max_total,\n  ROUND(AVG(total), 1) AS avg_total\nFROM orders;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders;",
     expectedRows: [{ min_total: 980, max_total: 8300, avg_total: 3636 }],
     tablesUsed: ['orders'],
     successCriteria: ['MIN считает нижнюю границу.', 'MAX считает верхнюю границу.', 'AVG округлён до одного знака.'],
@@ -384,7 +395,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Региональная агрегация соединяет заказы с клиентами и превращает строки в управленческий показатель.',
     learningGoal: 'Скомбинировать JOIN, WHERE и GROUP BY.',
     sqlConcept: 'GROUP BY после JOIN',
-    starterSql: "SELECT customers.region, COUNT(*) AS cnt, SUM(orders.total) AS total_sum\nFROM orders\nJOIN customers ON customers.id = orders.customer_id\nWHERE orders.status = 'paid'\nGROUP BY customers.region\nORDER BY customers.region;",
+    solutionSql: "SELECT customers.region, COUNT(*) AS cnt, SUM(orders.total) AS total_sum\nFROM orders\nJOIN customers ON customers.id = orders.customer_id\nWHERE orders.status = 'paid'\nGROUP BY customers.region\nORDER BY customers.region;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nJOIN customers ON -- ? ключ связи: таблица.поле = таблица.поле\nWHERE -- ? условие фильтра\nGROUP BY -- ? поле группировки\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { region: 'siberia', cnt: 1, total_sum: 980 },
       { region: 'ural', cnt: 2, total_sum: 13900 }
@@ -416,7 +428,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'INNER JOIN нужен, когда у строки должна быть обязательная связанная сущность.',
     learningGoal: 'Закрепить соединение по внешнему ключу.',
     sqlConcept: 'INNER JOIN, foreign key',
-    starterSql: "SELECT orders.id, customers.region\nFROM orders\nJOIN customers ON customers.id = orders.customer_id\nWHERE orders.status = 'paid'\nORDER BY orders.id;",
+    solutionSql: "SELECT orders.id, customers.region\nFROM orders\nJOIN customers ON customers.id = orders.customer_id\nWHERE orders.status = 'paid'\nORDER BY orders.id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nJOIN customers ON -- ? ключ связи: таблица.поле = таблица.поле\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { id: 1001, region: 'ural' },
       { id: 1003, region: 'siberia' },
@@ -449,7 +462,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'LEFT JOIN + IS NULL выявляет разрывы между бизнес-статусом и технической интеграцией.',
     learningGoal: 'Понять, почему INNER JOIN может скрыть проблему.',
     sqlConcept: 'LEFT JOIN, IS NULL',
-    starterSql: "SELECT orders.id\nFROM orders\nLEFT JOIN delivery_events\n  ON delivery_events.order_id = orders.id\n  AND delivery_events.event_type = 'accepted'\nWHERE orders.status = 'paid'\n  AND delivery_events.id IS NULL\nORDER BY orders.id;",
+    solutionSql: "SELECT orders.id\nFROM orders\nLEFT JOIN delivery_events\n  ON delivery_events.order_id = orders.id\n  AND delivery_events.event_type = 'accepted'\nWHERE orders.status = 'paid'\n  AND delivery_events.id IS NULL\nORDER BY orders.id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nLEFT JOIN delivery_events\n  ON delivery_events.order_id = orders.id\n  AND delivery_events.event_type = 'accepted'\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: [{ id: 1001 }, { id: 1003 }],
     orderMatters: true,
     tablesUsed: ['orders', 'delivery_events'],
@@ -478,7 +492,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Дубли по idempotency_key приводят к финансовым расхождениям и требуют отдельного инцидента.',
     learningGoal: 'Искать дубли через GROUP BY и HAVING.',
     sqlConcept: 'дубли, ключ идемпотентности',
-    starterSql: "SELECT idempotency_key, COUNT(*) AS cnt\nFROM payments\nWHERE status = 'captured'\nGROUP BY idempotency_key\nHAVING COUNT(*) > 1;",
+    solutionSql: "SELECT idempotency_key, COUNT(*) AS cnt\nFROM payments\nWHERE status = 'captured'\nGROUP BY idempotency_key\nHAVING COUNT(*) > 1;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM payments\nWHERE -- ? условие фильтра\nGROUP BY -- ? поле группировки\nHAVING -- ? условие по агрегату;",
     expectedRows: [{ idempotency_key: 'pay-1003', cnt: 2 }],
     tablesUsed: ['payments'],
     successCriteria: ['Фильтр captured.', 'Группировка по idempotency_key.', 'HAVING COUNT(*) > 1.'],
@@ -506,7 +521,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'CASE WHEN переводит технические события в понятные бизнес-категории.',
     learningGoal: 'Использовать CASE WHEN с LEFT JOIN.',
     sqlConcept: 'CASE WHEN',
-    starterSql: "SELECT orders.id,\n  CASE\n    WHEN delivery_events.event_type = 'accepted' THEN 'accepted'\n    WHEN delivery_events.event_type = 'failed' THEN 'failed'\n    ELSE 'missing'\n  END AS delivery_state\nFROM orders\nLEFT JOIN delivery_events ON delivery_events.order_id = orders.id\nWHERE orders.status = 'paid'\nORDER BY orders.id;",
+    solutionSql: "SELECT orders.id,\n  CASE\n    WHEN delivery_events.event_type = 'accepted' THEN 'accepted'\n    WHEN delivery_events.event_type = 'failed' THEN 'failed'\n    ELSE 'missing'\n  END AS delivery_state\nFROM orders\nLEFT JOIN delivery_events ON delivery_events.order_id = orders.id\nWHERE orders.status = 'paid'\nORDER BY orders.id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nLEFT JOIN delivery_events ON -- ? ключ связи: таблица.поле = таблица.поле\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { id: 1001, delivery_state: 'missing' },
       { id: 1003, delivery_state: 'failed' },
@@ -539,7 +555,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'HAVING нужен, когда условие зависит от агрегата.',
     learningGoal: 'Фильтровать группы после COUNT.',
     sqlConcept: 'HAVING',
-    starterSql: "SELECT customers.region, COUNT(*) AS paid_count\nFROM orders\nJOIN customers ON customers.id = orders.customer_id\nWHERE orders.status = 'paid'\nGROUP BY customers.region\nHAVING COUNT(*) > 1;",
+    solutionSql: "SELECT customers.region, COUNT(*) AS paid_count\nFROM orders\nJOIN customers ON customers.id = orders.customer_id\nWHERE orders.status = 'paid'\nGROUP BY customers.region\nHAVING COUNT(*) > 1;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nJOIN customers ON -- ? ключ связи: таблица.поле = таблица.поле\nWHERE -- ? условие фильтра\nGROUP BY -- ? поле группировки\nHAVING -- ? условие по агрегату;",
     expectedRows: [{ region: 'ural', paid_count: 2 }],
     tablesUsed: ['orders', 'customers'],
     successCriteria: ['COUNT считает paid-заказы по региону.', 'WHERE фильтрует строки до группировки.', 'HAVING оставляет группы с COUNT больше 1.'],
@@ -567,7 +584,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Условная логика помогает превратить агрегаты в статус контроля.',
     learningGoal: 'Совместить GROUP BY, COUNT и CASE.',
     sqlConcept: 'CASE WHEN по агрегату',
-    starterSql: "SELECT order_id,\n  CASE\n    WHEN COUNT(*) > 1 THEN 'needs_review'\n    ELSE 'ok'\n  END AS payment_control\nFROM payments\nWHERE status = 'captured'\nGROUP BY order_id\nORDER BY order_id;",
+    solutionSql: "SELECT order_id,\n  CASE\n    WHEN COUNT(*) > 1 THEN 'needs_review'\n    ELSE 'ok'\n  END AS payment_control\nFROM payments\nWHERE status = 'captured'\nGROUP BY order_id\nORDER BY order_id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM payments\nWHERE -- ? условие фильтра\nGROUP BY -- ? поле группировки\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { order_id: 1001, payment_control: 'ok' },
       { order_id: 1002, payment_control: 'ok' },
@@ -600,7 +618,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Подзапрос нужен, когда порог зависит от данных.',
     learningGoal: 'Использовать scalar subquery с AVG.',
     sqlConcept: 'subquery',
-    starterSql: 'SELECT id, total\nFROM orders\nWHERE total > (SELECT AVG(total) FROM orders)\nORDER BY id;',
+    solutionSql: "SELECT id, total\nFROM orders\nWHERE total > (SELECT AVG(total) FROM orders)\nORDER BY id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { id: 1001, total: 5600 },
       { id: 1005, total: 8300 }
@@ -632,7 +651,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'IN с подзапросом помогает отобрать сущности по фактам из другой таблицы.',
     learningGoal: 'Использовать IN subquery.',
     sqlConcept: 'IN subquery',
-    starterSql: "SELECT id\nFROM orders\nWHERE id IN (\n  SELECT order_id\n  FROM payments\n  WHERE status = 'captured'\n)\nORDER BY id;",
+    solutionSql: "SELECT id\nFROM orders\nWHERE id IN (\n  SELECT order_id\n  FROM payments\n  WHERE status = 'captured'\n)\nORDER BY id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nWHERE -- ? условие фильтра\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\n  FROM payments\nWHERE -- ? условие фильтра\n)\nORDER BY -- ? поле сортировки;",
     expectedRows: [{ id: 1001 }, { id: 1002 }, { id: 1003 }],
     orderMatters: true,
     tablesUsed: ['orders', 'payments'],
@@ -661,7 +681,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'CTE делает сложную сверку платежей и заказов читаемой и проверяемой.',
     learningGoal: 'Разложить сверку на именованный шаг и итоговый запрос.',
     sqlConcept: 'CTE, COALESCE',
-    starterSql: "WITH captured AS (\n  SELECT order_id, SUM(amount) AS captured_amount\n  FROM payments\n  WHERE status = 'captured'\n  GROUP BY order_id\n)\nSELECT orders.id AS order_id,\n  orders.total AS order_total,\n  COALESCE(captured.captured_amount, 0) AS captured_amount\nFROM orders\nLEFT JOIN captured ON captured.order_id = orders.id\nWHERE orders.status = 'paid'\n  AND COALESCE(captured.captured_amount, 0) <> orders.total\nORDER BY orders.id;",
+    solutionSql: "WITH captured AS (\n  SELECT order_id, SUM(amount) AS captured_amount\n  FROM payments\n  WHERE status = 'captured'\n  GROUP BY order_id\n)\nSELECT orders.id AS order_id,\n  orders.total AS order_total,\n  COALESCE(captured.captured_amount, 0) AS captured_amount\nFROM orders\nLEFT JOIN captured ON captured.order_id = orders.id\nWHERE orders.status = 'paid'\n  AND COALESCE(captured.captured_amount, 0) <> orders.total\nORDER BY orders.id;",
+    starterSql: "WITH captured AS (\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\n  FROM payments\nWHERE -- ? условие фильтра\nGROUP BY -- ? поле группировки\n)\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nLEFT JOIN captured ON -- ? ключ связи: таблица.поле = таблица.поле\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { order_id: 1003, order_total: 980, captured_amount: 1960 },
       { order_id: 1005, order_total: 8300, captured_amount: 0 }
@@ -693,7 +714,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'ROW_NUMBER позволяет найти топ-строку внутри сегмента и сохранить её поля.',
     learningGoal: 'Использовать ROW_NUMBER с PARTITION BY.',
     sqlConcept: 'ROW_NUMBER OVER',
-    starterSql: 'WITH ranked AS (\n  SELECT customers.region,\n    orders.id,\n    orders.total,\n    ROW_NUMBER() OVER (\n      PARTITION BY customers.region\n      ORDER BY orders.total DESC\n    ) AS rn\n  FROM orders\n  JOIN customers ON customers.id = orders.customer_id\n)\nSELECT region, id, total\nFROM ranked\nWHERE rn = 1\nORDER BY region;',
+    solutionSql: "WITH ranked AS (\n  SELECT customers.region,\n    orders.id,\n    orders.total,\n    ROW_NUMBER() OVER (\n      PARTITION BY customers.region\n      ORDER BY orders.total DESC\n    ) AS rn\n  FROM orders\n  JOIN customers ON customers.id = orders.customer_id\n)\nSELECT region, id, total\nFROM ranked\nWHERE rn = 1\nORDER BY region;",
+    starterSql: "WITH ranked AS (\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\nORDER BY -- ? поле сортировки\n    ) AS rn\n  FROM orders\n  JOIN customers ON -- ? ключ связи: таблица.поле = таблица.поле\n)\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM ranked\nWHERE -- ? условие фильтра\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { region: 'moscow', id: 1002, total: 2100 },
       { region: 'siberia', id: 1003, total: 980 },
@@ -726,7 +748,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'RANK помогает ранжировать строки и оставлять прозрачный порядок при равных значениях.',
     learningGoal: 'Использовать RANK OVER с глобальной сортировкой.',
     sqlConcept: 'RANK OVER',
-    starterSql: 'SELECT id, total,\n  RANK() OVER (ORDER BY total DESC) AS total_rank\nFROM orders\nORDER BY total_rank\nLIMIT 3;',
+    solutionSql: "SELECT id, total,\n  RANK() OVER (ORDER BY total DESC) AS total_rank\nFROM orders\nORDER BY total_rank\nLIMIT 3;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nORDER BY -- ? поле сортировки\nLIMIT -- ? сколько строк;",
     expectedRows: [
       { id: 1005, total: 8300, total_rank: 1 },
       { id: 1001, total: 5600, total_rank: 2 },
@@ -759,7 +782,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'LAG и SUM OVER помогают анализировать динамику без потери строк.',
     learningGoal: 'Использовать LAG и накопительную сумму.',
     sqlConcept: 'LAG, SUM OVER',
-    starterSql: 'SELECT id,\n  total,\n  LAG(total) OVER (ORDER BY created_at) AS prev_total,\n  SUM(total) OVER (\n    ORDER BY created_at\n    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n  ) AS running_total\nFROM orders\nORDER BY created_at;',
+    solutionSql: "SELECT id,\n  total,\n  LAG(total) OVER (ORDER BY created_at) AS prev_total,\n  SUM(total) OVER (\n    ORDER BY created_at\n    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n  ) AS running_total\nFROM orders\nORDER BY created_at;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nORDER BY -- ? поле сортировки\n  ) AS running_total\nFROM orders\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { id: 1001, total: 5600, prev_total: null, running_total: 5600 },
       { id: 1002, total: 2100, prev_total: 5600, running_total: 7700 },
@@ -794,7 +818,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Воронка показывает распределение paid-заказов по состояниям интеграции.',
     learningGoal: 'Собрать классификацию и агрегировать её.',
     sqlConcept: 'CASE + GROUP BY для funnel-lite',
-    starterSql: "WITH states AS (\n  SELECT orders.id,\n    CASE\n      WHEN delivery_events.event_type = 'accepted' THEN 'accepted'\n      WHEN delivery_events.event_type = 'failed' THEN 'failed'\n      ELSE 'missing'\n    END AS delivery_state\n  FROM orders\n  LEFT JOIN delivery_events ON delivery_events.order_id = orders.id\n  WHERE orders.status = 'paid'\n)\nSELECT delivery_state, COUNT(*) AS cnt\nFROM states\nGROUP BY delivery_state\nORDER BY delivery_state;",
+    solutionSql: "WITH states AS (\n  SELECT orders.id,\n    CASE\n      WHEN delivery_events.event_type = 'accepted' THEN 'accepted'\n      WHEN delivery_events.event_type = 'failed' THEN 'failed'\n      ELSE 'missing'\n    END AS delivery_state\n  FROM orders\n  LEFT JOIN delivery_events ON delivery_events.order_id = orders.id\n  WHERE orders.status = 'paid'\n)\nSELECT delivery_state, COUNT(*) AS cnt\nFROM states\nGROUP BY delivery_state\nORDER BY delivery_state;",
+    starterSql: "WITH states AS (\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\n  FROM orders\n  LEFT JOIN delivery_events ON -- ? ключ связи: таблица.поле = таблица.поле\nWHERE -- ? условие фильтра\n)\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM states\nGROUP BY -- ? поле группировки\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { delivery_state: 'accepted', cnt: 1 },
       { delivery_state: 'failed', cnt: 1 },
@@ -827,7 +852,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Повторные покупки — простая, но важная метрика лояльности.',
     learningGoal: 'Найти клиентов с количеством заказов больше одного.',
     sqlConcept: 'retention-lite через GROUP BY и HAVING',
-    starterSql: 'SELECT customer_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) > 1\nORDER BY customer_id;',
+    solutionSql: "SELECT customer_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) > 1\nORDER BY customer_id;",
+    starterSql: "SELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nGROUP BY -- ? поле группировки\nHAVING -- ? условие по агрегату\nORDER BY -- ? поле сортировки;",
     expectedRows: [{ customer_id: 1, order_count: 2 }],
     orderMatters: true,
     tablesUsed: ['orders'],
@@ -856,7 +882,8 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     businessContext: 'Реальная аналитическая проверка часто объединяет несколько сигналов качества процесса.',
     learningGoal: 'Совместить CTE, LEFT JOIN, агрегаты и CASE для итогового контроля.',
     sqlConcept: 'комплексная сверка процесса',
-    starterSql: "WITH captured AS (\n  SELECT order_id, SUM(amount) AS captured_amount\n  FROM payments\n  WHERE status = 'captured'\n  GROUP BY order_id\n), accepted AS (\n  SELECT order_id, COUNT(*) AS accepted_count\n  FROM delivery_events\n  WHERE event_type = 'accepted'\n  GROUP BY order_id\n)\nSELECT orders.id AS order_id,\n  CASE\n    WHEN COALESCE(captured.captured_amount, 0) <> orders.total THEN 'payment_mismatch'\n    WHEN COALESCE(accepted.accepted_count, 0) = 0 THEN 'delivery_missing'\n    ELSE 'ok'\n  END AS anomaly_type\nFROM orders\nLEFT JOIN captured ON captured.order_id = orders.id\nLEFT JOIN accepted ON accepted.order_id = orders.id\nWHERE orders.status = 'paid'\n  AND (\n    COALESCE(captured.captured_amount, 0) <> orders.total\n    OR COALESCE(accepted.accepted_count, 0) = 0\n  )\nORDER BY orders.id;",
+    solutionSql: "WITH captured AS (\n  SELECT order_id, SUM(amount) AS captured_amount\n  FROM payments\n  WHERE status = 'captured'\n  GROUP BY order_id\n), accepted AS (\n  SELECT order_id, COUNT(*) AS accepted_count\n  FROM delivery_events\n  WHERE event_type = 'accepted'\n  GROUP BY order_id\n)\nSELECT orders.id AS order_id,\n  CASE\n    WHEN COALESCE(captured.captured_amount, 0) <> orders.total THEN 'payment_mismatch'\n    WHEN COALESCE(accepted.accepted_count, 0) = 0 THEN 'delivery_missing'\n    ELSE 'ok'\n  END AS anomaly_type\nFROM orders\nLEFT JOIN captured ON captured.order_id = orders.id\nLEFT JOIN accepted ON accepted.order_id = orders.id\nWHERE orders.status = 'paid'\n  AND (\n    COALESCE(captured.captured_amount, 0) <> orders.total\n    OR COALESCE(accepted.accepted_count, 0) = 0\n  )\nORDER BY orders.id;",
+    starterSql: "WITH captured AS (\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\n  FROM payments\nWHERE -- ? условие фильтра\nGROUP BY -- ? поле группировки\n), accepted AS (\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\n  FROM delivery_events\nWHERE -- ? условие фильтра\nGROUP BY -- ? поле группировки\n)\nSELECT -- ? какие колонки нужны? (см. критерии успеха)\nFROM orders\nLEFT JOIN captured ON -- ? ключ связи: таблица.поле = таблица.поле\nLEFT JOIN accepted ON -- ? ключ связи: таблица.поле = таблица.поле\nWHERE -- ? условие фильтра\n  )\nORDER BY -- ? поле сортировки;",
     expectedRows: [
       { order_id: 1001, anomaly_type: 'delivery_missing' },
       { order_id: 1003, anomaly_type: 'payment_mismatch' },

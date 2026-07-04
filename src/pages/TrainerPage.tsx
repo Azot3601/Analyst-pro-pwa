@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SqlQuestWorkspace } from '../features/trainer/SqlQuestWorkspace';
 import { ApiQuestWorkspace } from '../features/trainer/api/ApiQuestWorkspace';
 import { RequirementsQuestWorkspace } from '../features/trainer/requirements/RequirementsQuestWorkspace';
@@ -16,7 +17,12 @@ const domains: Array<{ id: TrainerDomain; label: string }> = [
 ];
 
 export function TrainerPage() {
-  const [domain, setDomain] = useState<TrainerDomain>('sql');
+  // Deep-link из «Практики»: /trainer?domain=sql&lesson=q07
+  const [params] = useSearchParams();
+  const domainParam = params.get('domain');
+  const lessonParam = params.get('lesson') ?? undefined;
+  const initialDomain = domains.some((item) => item.id === domainParam) ? (domainParam as TrainerDomain) : 'sql';
+  const [domain, setDomain] = useState<TrainerDomain>(initialDomain);
   const selectRelativeDomain = (offset: number) => {
     const current = domains.findIndex((item) => item.id === domain);
     setDomain(domains[(current + offset + domains.length) % domains.length].id);
@@ -61,7 +67,7 @@ export function TrainerPage() {
         aria-labelledby={`trainer-tab-${domain}`}
       >
         {domain === 'sql' ? (
-          <SqlQuestWorkspace />
+          <SqlQuestWorkspace initialLessonId={lessonParam} />
         ) : domain === 'requirements' ? (
           <RequirementsQuestWorkspace />
         ) : (
