@@ -17,7 +17,7 @@ describe('apiQuest data', () => {
       result[task.kind] = (result[task.kind] ?? 0) + 1;
       return result;
     }, {});
-    expect(counts.rest).toBe(8);
+    expect(counts.rest).toBe(9);
     expect(counts.json).toBe(8);
     expect(counts.openapi).toBe(6);
     expect(counts.integration).toBe(6);

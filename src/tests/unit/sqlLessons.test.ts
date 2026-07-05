@@ -1,6 +1,7 @@
 import initSqlJs from 'sql.js';
 import { describe, expect, it } from 'vitest';
 import { isSqlQuestLessonUnlocked, sqlQuestChapters, sqlQuestLessons } from '../../data/sqlQuest';
+import { caseSchemaSql } from '../../data/cases/caseRegistry';
 import { sqlSchema } from '../../data/sqlSeed';
 import { compareSqlRows, type SqlRow } from '../../shared/lib/sqlChecker';
 
@@ -10,6 +11,7 @@ async function runLessonSql(query: string): Promise<SqlRow[]> {
   });
   const db = new SQL.Database();
   db.run(sqlSchema);
+  db.run(caseSchemaSql);
   const result = db.exec(query);
   db.close();
 
@@ -21,16 +23,20 @@ async function runLessonSql(query: string): Promise<SqlRow[]> {
 }
 
 describe('sqlQuest lessons', () => {
-  it('has 8 chapters and 24 lessons with both learning paths', () => {
-    expect(sqlQuestChapters).toHaveLength(8);
-    expect(sqlQuestLessons).toHaveLength(24);
+  it('keeps 8 base chapters (both paths) plus the reservation case-track', () => {
+    expect(sqlQuestChapters).toHaveLength(9);
+    expect(sqlQuestLessons).toHaveLength(26);
 
-    for (const chapter of sqlQuestChapters) {
+    for (const chapter of sqlQuestChapters.filter((c) => c.id !== 'case-reservation')) {
       const lessons = sqlQuestLessons.filter((lesson) => lesson.chapterId === chapter.id);
       expect(lessons, chapter.id).toHaveLength(3);
       expect(lessons.some((lesson) => lesson.pathType === 'trial'), chapter.id).toBe(true);
       expect(lessons.some((lesson) => lesson.pathType === 'case'), chapter.id).toBe(true);
     }
+
+    const caseLessons = sqlQuestLessons.filter((lesson) => lesson.chapterId === 'case-reservation');
+    expect(caseLessons.length).toBeGreaterThanOrEqual(2);
+    expect(caseLessons.every((lesson) => lesson.pathType === 'case')).toBe(true);
   });
 
   it('unlocks lessons after prerequisites are solved', () => {

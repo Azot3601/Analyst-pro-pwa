@@ -1,5 +1,6 @@
 import initSqlJs from 'sql.js';
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
+import { caseSchemaSql } from '../../data/cases/caseRegistry';
 import { sqlSchema } from '../../data/sqlSeed';
 import type { SqlRow } from '../../shared/lib/sqlChecker';
 
@@ -25,6 +26,7 @@ async function getDatabase() {
     dbPromise = getEngine().then((SQL) => {
       const db = new SQL.Database();
       db.run(sqlSchema);
+      db.run(caseSchemaSql); // таблицы кейсов (Бронирование столиков и т.д.)
       return db;
     });
   }

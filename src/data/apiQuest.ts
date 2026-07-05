@@ -1,4 +1,5 @@
 import type { Task } from '../entities/schemas';
+import { reservationContract } from './cases/reservationCase/apiContract';
 import type { JsonRule, OpenApiRule, RestRule, SoapRule } from '../shared/lib/apiQuestCheckers';
 
 type UiMeta = {
@@ -245,6 +246,27 @@ const restCases: RestCase[] = [
         { name: 'customerId', type: 'string', required: true, description: 'В этой задаче намеренно пропускается для проверки ошибки.' },
         { name: 'items', type: 'array', required: true, description: 'Список позиций заказа.' }
       ], example: { items: [] } }
+    }
+  },
+  {
+    // Кейс «Бронирование столиков»: поля ответа берутся из reservationContract,
+    // то есть те же имена, что в SQL-таблице reservations и в ERD кейса.
+    title: 'Кейс: получить бронь столика',
+    method: reservationContract.method,
+    path: reservationContract.path,
+    status: 200,
+    pathParamExamples: { id: '3' },
+    response: reservationContract.requiredFields,
+    focus: 'GET ресурса по id (сквозной кейс «Бронирование»)',
+    context: 'Тот же домен, что в SQL-треке: гость, столик, бронь, штраф. Достаём одну бронь по её id.',
+    goal: 'Прочитать контракт ответа брони — те же поля, что в таблице reservations.',
+    realLife: 'GET ресурса по идентификатору — базовая операция чтения в REST; тут она на знакомом домене брони.',
+    beginner: {
+      simpleExplanation:
+        'GET /reservations/{id} возвращает одну бронь. Поля ответа совпадают с колонками таблицы reservations — один домен на все инструменты тренажёра.',
+      fillSteps: ['Выбери GET.', 'Подставь 3 в шаблон endpoint.', 'Не добавляй тело запроса.'],
+      expectedResult: `HTTP 200 и JSON брони с полями: ${reservationContract.requiredFields.join(', ')}.`,
+      example: { method: 'GET', endpoint: reservationContract.path, pathParams: { id: '3' } }
     }
   }
 ];

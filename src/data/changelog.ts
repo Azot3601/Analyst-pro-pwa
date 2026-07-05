@@ -6,6 +6,15 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.12',
+    title: 'Сквозной кейс: одни сущности во всех инструментах',
+    changes: [
+      { tag: 'Новое', text: 'Кейс «Бронирование столиков»: гость, столик, бронь, штраф — единая доменная модель для SQL и API', to: '/trainer?domain=sql' },
+      { tag: 'Новое', text: 'SQL-трек кейса: неявки (no_show) и кто получил штраф — на живом домене, а не абстрактных таблицах', to: '/trainer?domain=sql' },
+      { tag: 'Новое', text: 'API-задача кейса: GET брони с теми же полями, что в SQL-таблице reservations', to: '/trainer?domain=rest' }
+    ]
+  },
+  {
     version: 'v0.11',
     title: 'Быстрее и надёжнее',
     changes: [

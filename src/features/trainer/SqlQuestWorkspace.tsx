@@ -36,6 +36,7 @@ import {
   type SqlQuestPathType
 } from '../../data/sqlQuest';
 import { sqlTablePreviews, type SqlTablePreview } from '../../data/sqlSeed';
+import { casePreviews } from '../../data/cases/caseRegistry';
 import type { UserProgress } from '../../entities/schemas';
 import {
   defaultProgress,
@@ -297,13 +298,20 @@ function DiagnosticBlock({ diagnostic, lesson }: { diagnostic: SqlDiagnostic; le
   );
 }
 
+// Кейс-уроки показывают таблицы своего кейса, базовые — витрину заказов.
+function previewsForLesson(lesson: SqlQuestLesson): SqlTablePreview[] {
+  return lesson.chapterId === 'case-reservation' ? casePreviews : sqlTablePreviews;
+}
+
 function DataPanel({
   lesson,
+  previews,
   activeTable,
   selectedTable,
   onSelect
 }: {
   lesson: SqlQuestLesson;
+  previews: SqlTablePreview[];
   activeTable: SqlTablePreview;
   selectedTable: string;
   onSelect: (table: string) => void;
@@ -312,7 +320,7 @@ function DataPanel({
     <div data-testid="sql-data-panel">
       <Panel title="Данные" className="min-w-0">
         <div className="mb-3 flex flex-wrap gap-1.5">
-          {sqlTablePreviews.map((table) => (
+          {previews.map((table) => (
             <button
               key={table.name}
               className={`rounded-md border px-2 py-1 text-[11px] ${
@@ -444,7 +452,8 @@ export function SqlQuestWorkspace({ initialLessonId }: { initialLessonId?: strin
     message: 'Запустите запрос, чтобы увидеть результат.'
   });
   const [resultRows, setResultRows] = useState<SqlRow[]>([]);
-  const [selectedTable, setSelectedTable] = useState(sqlTablePreviews[1].name);
+  const previews = previewsForLesson(lesson);
+  const [selectedTable, setSelectedTable] = useState(lesson.tablesUsed[0] ?? previews[0].name);
   const [mobileTab, setMobileTab] = useState<MobileTab>('sql');
 
   useEffect(() => {
@@ -460,13 +469,13 @@ export function SqlQuestWorkspace({ initialLessonId }: { initialLessonId?: strin
     setSqlValue(lesson.starterSql);
     setFeedback({ state: 'idle', message: 'Запустите запрос, чтобы увидеть результат.' });
     setResultRows([]);
-    setSelectedTable(lesson.tablesUsed[0] ?? sqlTablePreviews[0].name);
+    setSelectedTable(lesson.tablesUsed[0] ?? previews[0].name);
     setMobileTab('sql');
     void setSqlQuestLocation(lesson.chapterId, lesson.id).catch(() => undefined);
-  }, [lesson.id, lesson.chapterId, lesson.starterSql, lesson.tablesUsed]);
+  }, [lesson.id, lesson.chapterId, lesson.starterSql, lesson.tablesUsed, previews]);
 
   const progressPercent = Math.round((quest.solvedSqlLessonIds.length / sqlQuestLessons.length) * 100);
-  const activeTable = sqlTablePreviews.find((table) => table.name === selectedTable) ?? sqlTablePreviews[0];
+  const activeTable = previews.find((table) => table.name === selectedTable) ?? previews[0];
   const resultColumns = resultRows.length ? Object.keys(resultRows[0]) : [];
   const unlocked = isSqlQuestLessonUnlocked(lesson, quest.solvedSqlLessonIds);
   const revealedHintIds = quest.revealedHintsByLessonId[lesson.id] ?? [];
@@ -741,6 +750,7 @@ export function SqlQuestWorkspace({ initialLessonId }: { initialLessonId?: strin
           <CompactRank quest={quest} feedback={feedback} />
           <DataPanel
             lesson={lesson}
+            previews={previews}
             activeTable={activeTable}
             selectedTable={selectedTable}
             onSelect={setSelectedTable}
@@ -769,6 +779,7 @@ export function SqlQuestWorkspace({ initialLessonId }: { initialLessonId?: strin
         {mobileTab === 'data' && (
           <DataPanel
             lesson={lesson}
+            previews={previews}
             activeTable={activeTable}
             selectedTable={selectedTable}
             onSelect={setSelectedTable}

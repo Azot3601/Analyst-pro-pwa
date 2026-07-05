@@ -6,6 +6,8 @@ export type ApiRequest = {
   body?: unknown;
 };
 
+import { reservationContract } from '../../data/cases/reservationCase/apiContract';
+
 export type ApiResponse = {
   status: number;
   body: unknown;
@@ -47,6 +49,12 @@ export function simulateApiRequest(request: ApiRequest): ApiResponse {
       },
       headers: { 'content-type': 'application/json' }
     };
+  }
+
+  // Кейс «Бронирование столиков»: GET одной брони — тот же домен, что в SQL-треке.
+  const reservationMatch = request.path.match(/^\/api\/v1\/reservations\/(\d+)$/);
+  if (method === 'GET' && reservationMatch) {
+    return { status: 200, body: reservationContract.example, headers: { 'content-type': 'application/json' } };
   }
 
   const orderMatch = request.path.match(/^\/api\/v1\/orders\/(ord-\d+)$/i);

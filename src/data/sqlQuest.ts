@@ -109,6 +109,14 @@ export const sqlQuestChapters: SqlQuestChapter[] = [
     subtitle: 'Воронки, повторные покупки, SLA и аномалии',
     topics: ['воронки', 'retention-lite', 'повторные покупки', 'SLA', 'аномалии'],
     description: 'Решаем задачи, где SQL нужен для аналитического вывода, а не только для синтаксиса.'
+  },
+  {
+    id: 'case-reservation',
+    order: 9,
+    title: 'Кейс: Бронирование столиков',
+    subtitle: 'Сквозной кейс — те же сущности, что в API и моделях',
+    topics: ['Guest', 'Table', 'Reservation', 'Penalty', 'JOIN', 'фильтры'],
+    description: 'Работаем с реальным доменом: гости, столики, брони и штрафы за неявку. Те же имена полей встретятся в API-контракте и ERD.'
   }
 ];
 
@@ -906,6 +914,69 @@ export const sqlQuestLessons: SqlQuestLesson[] = [
     successStory: 'Доска аномалий собрана. Королевство данных пока не идеально, зато теперь понятно, где чинить.',
     companionSuccess: 'Это уже не упражнение, а рабочий контроль качества процесса.',
     companionError: 'Сложная доска держится на простых шагах: CTE, LEFT JOIN, COALESCE и понятный CASE.'
+  },
+
+  // ── Кейс-трек «Бронирование столиков» (те же сущности, что в API/ERD) ────────
+  {
+    id: 'qc01-reservation-noshows',
+    chapterId: 'case-reservation',
+    pathType: 'case',
+    title: 'Неявки по броням',
+    storyIntro: 'Управляющий рестораном хочет понять масштаб проблемы: сколько гостей бронируют столик и не приходят.',
+    businessContext: 'Неявка — это бронь со статусом no_show. По ней ресторан теряет столик и позже выставляет штраф.',
+    learningGoal: 'Отфильтровать брони по бизнес-статусу.',
+    sqlConcept: 'WHERE, фильтр по статусу',
+    solutionSql: "SELECT id, guest_id, reserved_for\nFROM reservations\nWHERE status = 'no_show'\nORDER BY id;",
+    starterSql: "SELECT id, guest_id, reserved_for\nFROM reservations\nWHERE status = -- ? какой статус у неявки?\nORDER BY id;",
+    expectedRows: [
+      { id: 2, guest_id: 2, reserved_for: '2026-06-01 20:00' },
+      { id: 4, guest_id: 4, reserved_for: '2026-06-02 20:00' }
+    ],
+    tablesUsed: ['reservations'],
+    successCriteria: ['Только брони со статусом no_show', 'Колонки id, guest_id, reserved_for'],
+    hints: [
+      'Неявка — это статус no_show в таблице reservations.',
+      'Условие ставится в WHERE: status = \'no_show\'.',
+      'Не забудь ORDER BY id для стабильного порядка.'
+    ],
+    explanation: 'Аналитик переводит бизнес-понятие «неявка» в проверяемый фильтр по полю status. Это те же reservations, что появятся в API-контракте кейса.',
+    commonMistakes: ['Искать неявку по другому полю вместо status.', 'Забыть кавычки вокруг строкового значения.'],
+    relatedKnowledgeIds: ['sql-where-filter', 'requirements'],
+    xp: 60,
+    prerequisiteTaskIds: [],
+    successStory: 'Список неявок готов — теперь видно, по каким броням ресторан теряет столики.',
+    companionSuccess: 'Это тот же навык WHERE, но уже на живом домене брони.',
+    companionError: 'Неявка = status no_show. Отфильтруй именно по этому значению.'
+  },
+  {
+    id: 'qc02-penalized-guests',
+    chapterId: 'case-reservation',
+    pathType: 'case',
+    title: 'Кто получил штраф за неявку',
+    storyIntro: 'Финансовый менеджер просит список гостей, которым выставлен штраф — их предупредят при следующей броне.',
+    businessContext: 'Штраф (penalties) привязан к броне (reservations), а бронь — к гостю (guests). Нужно пройти по связям от штрафа к имени гостя.',
+    learningGoal: 'Связать три таблицы через JOIN по ключам и убрать дубли.',
+    sqlConcept: 'JOIN, DISTINCT',
+    solutionSql:
+      "SELECT DISTINCT guests.full_name\nFROM penalties\nJOIN reservations ON reservations.id = penalties.reservation_id\nJOIN guests ON guests.id = reservations.guest_id\nORDER BY guests.full_name;",
+    starterSql:
+      "SELECT DISTINCT guests.full_name\nFROM penalties\nJOIN reservations ON reservations.id = -- ? какой ключ связывает штраф и бронь?\nJOIN guests ON guests.id = -- ? какой ключ связывает бронь и гостя?\nORDER BY guests.full_name;",
+    expectedRows: [{ full_name: 'Борис Лан' }, { full_name: 'Глеб Рой' }],
+    tablesUsed: ['penalties', 'reservations', 'guests'],
+    successCriteria: ['Имена гостей со штрафом', 'Без дублей (DISTINCT)'],
+    hints: [
+      'penalties.reservation_id указывает на reservations.id.',
+      'reservations.guest_id указывает на guests.id.',
+      'DISTINCT уберёт повтор, если у гостя несколько штрафов.'
+    ],
+    explanation: 'Путь «штраф → бронь → гость» — это обход связей доменной модели через внешние ключи. Те же связи ты нарисуешь в ERD этого кейса.',
+    commonMistakes: ['Соединить таблицы не по тем ключам.', 'Забыть DISTINCT и получить дубли.'],
+    relatedKnowledgeIds: ['sql-join-relations', 'erd'],
+    xp: 90,
+    prerequisiteTaskIds: ['qc01-reservation-noshows'],
+    successStory: 'Список оштрафованных гостей собран — по связям от штрафа до имени.',
+    companionSuccess: 'Ты прошёл всю цепочку ключей домена — это ядро работы с реляционной моделью.',
+    companionError: 'Соединяй по внешним ключам: penalties.reservation_id → reservations.id → guests.id.'
   }
 ];
 
