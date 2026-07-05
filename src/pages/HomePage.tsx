@@ -87,6 +87,22 @@ export function HomePage() {
 
   const skills = useMemo(() => computeSkillLevels(progress), [progress]);
 
+  // Онбординг-маршрут: ведём новичка по шагам, отмечая пройденное по реальным данным.
+  const path = useMemo(() => {
+    const reqSolved = progress.solvedTaskIds.includes('req-01-classify');
+    const sqlSolved = (progress.sqlQuest?.solvedSqlLessonIds ?? []).length > 0;
+    const practiceStarted = Object.keys(progress.reviews ?? {}).length > 0;
+    const started = sqlSolved || reqSolved || progress.solvedTaskIds.length > 0 || practiceStarted;
+    const steps = [
+      { title: 'Профессия', desc: 'Понять, чем занят аналитик и как системы общаются', to: '/profession', done: started },
+      { title: 'Требования', desc: 'Разобрать первый бриф: требования против допущений', to: '/trainer?domain=requirements', done: reqSolved },
+      { title: 'SQL с нуля', desc: 'Решить первую задачу — запрос к книге заказов', to: '/trainer?domain=sql', done: sqlSolved },
+      { title: 'Практика', desc: 'Закрепить решённое интервальным повторением', to: '/practice', done: practiceStarted }
+    ];
+    const nextIndex = steps.findIndex((step) => !step.done);
+    return { steps, nextIndex };
+  }, [progress]);
+
   return (
     <div className="space-y-6">
       <WhatsNew />
@@ -145,6 +161,49 @@ export function HomePage() {
           </div>
         </Panel>
       </section>
+
+      <Panel title="Маршрут обучения" className="border-electric/15">
+        <p className="mb-4 text-sm text-slate-400">
+          Не знаешь, с чего начать? Иди по шагам — приложение поведёт за руку. Пройденное отмечается автоматически.
+        </p>
+        <div className="grid gap-3 md:grid-cols-4">
+          {path.steps.map((step, index) => {
+            const isNext = index === path.nextIndex;
+            return (
+              <Link
+                key={step.title}
+                to={step.to}
+                className={`group relative rounded-xl border p-4 transition ${
+                  step.done
+                    ? 'border-success/25 bg-success/[0.06]'
+                    : isNext
+                      ? 'border-electric/40 bg-electric/[0.08] shadow-soft'
+                      : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]'
+                }`}
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <span
+                    className={`grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${
+                      step.done ? 'bg-success/20 text-success' : isNext ? 'bg-electric/20 text-electric' : 'bg-white/10 text-slate-400'
+                    }`}
+                  >
+                    {step.done ? <CheckCircle2 size={14} /> : index + 1}
+                  </span>
+                  <span className="text-sm font-semibold text-slate-100">{step.title}</span>
+                  {isNext && (
+                    <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-electric">сейчас</span>
+                  )}
+                </div>
+                <p className="text-xs leading-5 text-slate-400">{step.desc}</p>
+                <ArrowRight
+                  size={14}
+                  className="mt-2 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-electric"
+                />
+              </Link>
+            );
+          })}
+        </div>
+      </Panel>
 
       <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
         <Panel title="Карта навыков">

@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, BrainCircuit, Gauge, GraduationCap, Home, Moon, Repeat, Settings, Sun, TerminalSquare, Wrench } from 'lucide-react';
+import { BookOpen, BrainCircuit, Gauge, GraduationCap, Home, Moon, Repeat, Search, Settings, Sun, TerminalSquare, Wrench } from 'lucide-react';
 import { useEffect } from 'react';
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { CommandPalette } from '../features/search/CommandPalette';
 import { KnowledgePage } from '../pages/KnowledgePage';
 import { HomePage } from '../pages/HomePage';
 import { ProfessionPage } from '../pages/ProfessionPage';
@@ -97,13 +98,26 @@ export function App() {
               </div>
               <div className="text-sm text-slate-400">Локальное обучение системному анализу</div>
             </div>
-            <button
-              aria-label="Переключить тему"
-              className="grid size-10 place-items-center rounded-xl border border-white/[0.08] bg-white/[0.06] text-slate-200 transition-all hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.12]"
-              onClick={() => setTheme(isLight ? 'dark' : 'light')}
-            >
-              {isLight ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                aria-label="Поиск (Ctrl+K)"
+                className="flex h-10 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.06] px-3 text-slate-300 transition-all hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.12]"
+                onClick={() => window.dispatchEvent(new Event('permalith:search'))}
+              >
+                <Search size={16} />
+                <span className="hidden text-sm text-slate-400 sm:inline">Поиск</span>
+                <kbd className="hidden rounded border border-white/15 px-1.5 py-0.5 text-[10px] text-slate-500 md:inline">
+                  Ctrl K
+                </kbd>
+              </button>
+              <button
+                aria-label="Переключить тему"
+                className="grid size-10 place-items-center rounded-xl border border-white/[0.08] bg-white/[0.06] text-slate-200 transition-all hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.12]"
+                onClick={() => setTheme(isLight ? 'dark' : 'light')}
+              >
+                {isLight ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
+            </div>
           </header>
 
           <main className="mx-auto w-full max-w-[1640px] px-4 pb-24 pt-6 lg:px-10 lg:pb-10">
@@ -149,6 +163,8 @@ export function App() {
             );
           })}
         </nav>
+
+        <CommandPalette />
       </div>
     </div>
   );
