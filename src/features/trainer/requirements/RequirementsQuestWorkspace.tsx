@@ -123,6 +123,17 @@ export function RequirementsQuestWorkspace() {
     [activeId]
   );
 
+  // Группируем задачи по бизнес-домену, сохраняя порядок их появления.
+  const taskGroups = useMemo(() => {
+    const groups = new Map<string, RequirementsTask[]>();
+    for (const item of requirementsTasks) {
+      const list = groups.get(item.domain) ?? [];
+      list.push(item);
+      groups.set(item.domain, list);
+    }
+    return Array.from(groups.entries());
+  }, []);
+
   const [classification, setClassification] = useState<ClassificationSubmission>({});
   const [questionIds, setQuestionIds] = useState<string[]>([]);
   const [roleId, setRoleId] = useState('');
@@ -177,26 +188,41 @@ export function RequirementsQuestWorkspace() {
         <p className="mb-3 text-xs text-slate-400">
           Петля аналитика: элиситация → спецификация. Открытые задачи проверяются детерминированно.
         </p>
-        <ul className="space-y-2">
-          {requirementsTasks.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => setActiveId(item.id)}
-                className={`w-full rounded-md border px-3 py-2 text-left text-sm transition ${
-                  item.id === activeId
-                    ? 'border-electric bg-electric/10 text-electric'
-                    : 'border-white/10 bg-white/[0.03] text-slate-300 hover:bg-white/[0.06]'
-                }`}
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="font-semibold">{item.title}</span>
-                  {solvedIds.includes(item.id) && <CheckCircle2 size={15} className="text-success" />}
-                </span>
-                <span className="mt-0.5 block text-[11px] text-slate-500">{item.step}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="space-y-4">
+          {taskGroups.map(([domain, items]) => {
+            const solvedInGroup = items.filter((item) => solvedIds.includes(item.id)).length;
+            return (
+              <div key={domain}>
+                <div className="mb-1.5 flex items-center justify-between px-1">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{domain}</span>
+                  <span className="text-[10px] text-slate-600">
+                    {solvedInGroup}/{items.length}
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {items.map((item) => (
+                    <li key={item.id}>
+                      <button
+                        onClick={() => setActiveId(item.id)}
+                        className={`w-full rounded-md border px-3 py-2 text-left text-sm transition ${
+                          item.id === activeId
+                            ? 'border-electric bg-electric/10 text-electric'
+                            : 'border-white/10 bg-white/[0.03] text-slate-300 hover:bg-white/[0.06]'
+                        }`}
+                      >
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="font-semibold">{item.title}</span>
+                          {solvedIds.includes(item.id) && <CheckCircle2 size={15} className="text-success" />}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] text-slate-500">{item.step}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
       </Panel>
 
       <div className="space-y-3">

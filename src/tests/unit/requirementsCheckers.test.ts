@@ -20,10 +20,39 @@ const questionsTask = requirementsTasks.find(
 const storyTask = requirementsTasks.find((task): task is StoryTask => task.kind === 'story')!;
 
 describe('requirementsQuest data is internally solvable', () => {
-  it('has one task of each kind', () => {
-    const kinds = requirementsTasks.map((task) => task.kind).sort();
-    expect(kinds).toEqual(['classification', 'questions', 'story']);
+  it('covers every task kind across multiple domains', () => {
+    const kinds = new Set(requirementsTasks.map((task) => task.kind));
+    expect(kinds).toEqual(new Set(['classification', 'questions', 'story']));
+    // Несколько доменов (возврат, онбординг, отмена, KYC, резерв…).
+    expect(new Set(requirementsTasks.map((task) => task.domain)).size).toBeGreaterThanOrEqual(5);
   });
+
+  it('every task id is unique', () => {
+    const ids = requirementsTasks.map((task) => task.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  // Ключевой инвариант: эталонное решение КАЖДОЙ задачи проходит свой чекер.
+  // Ловит опечатки в id клауз/ролей/вопросов при добавлении новых доменов.
+  it.each(requirementsTasks.map((task) => [task.id, task] as const))(
+    'reference solution passes the checker for %s',
+    (_id, task) => {
+      if (task.kind === 'classification') {
+        const key = Object.fromEntries(task.rule.statements.map((s) => [s.id, s.label]));
+        expect(checkClassification(key, task.rule).ok).toBe(true);
+      } else if (task.kind === 'questions') {
+        const requiredIds = task.rule.options.filter((o) => o.required).map((o) => o.id);
+        expect(checkQuestions(requiredIds, task.rule).ok).toBe(true);
+      } else {
+        const reference = {
+          roleId: task.rule.roleId,
+          clauseIds: task.rule.requiredClauseIds,
+          edgeCaseIds: task.rule.edgeRequiredIds
+        };
+        expect(checkStory(reference, task.rule).ok).toBe(true);
+      }
+    }
+  );
 });
 
 describe('checkClassification', () => {
