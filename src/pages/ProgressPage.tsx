@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getRankForXp, getSqlQuestChapter, sqlQuestLessons, sqlQuestRanks } from '../data/sqlQuest';
 import { defaultProgress, defaultSqlQuestProgress, getProgress } from '../features/progress/progressDb';
+import { computeSkillLevels } from '../features/progress/skillLevels';
+import { conceptLabel } from '../features/practice/reviewEngine';
 import type { UserProgress } from '../entities/schemas';
 import { Panel } from '../shared/ui/Panel';
 
@@ -14,6 +16,7 @@ export function ProgressPage() {
   }, []);
 
   const quest = progress.sqlQuest ?? defaultSqlQuestProgress;
+  const skillLevels = useMemo(() => computeSkillLevels(progress), [progress]);
   const rank = getRankForXp(quest.xp);
   const currentChapter = getSqlQuestChapter(quest.currentChapterId);
   const recentLessons = quest.recentlySolvedLessonIds
@@ -142,12 +145,15 @@ export function ProgressPage() {
       </Panel>
 
       <Panel title="Общий прогресс по навыкам">
+        <p className="mb-4 text-xs text-slate-500">Считается из фактически решённых задач: решено / всего по треку.</p>
         <div className="space-y-4">
-          {Object.entries(progress.skillLevels).map(([skill, value]) => (
+          {skillLevels.map(({ skill, value, solved, total }) => (
             <div key={skill}>
               <div className="mb-2 flex items-center justify-between text-sm">
                 <span>{skill}</span>
-                <span className="text-slate-400">{value}%</span>
+                <span className="text-slate-400">
+                  {value}% <span className="text-slate-600">· {solved}/{total}</span>
+                </span>
               </div>
               <div className="h-2 rounded-full bg-white/10">
                 <div className="h-2 rounded-full bg-electric" style={{ width: `${value}%` }} />
@@ -158,14 +164,20 @@ export function ProgressPage() {
       </Panel>
 
       <Panel title="Слабые зоны">
-        <div className="flex flex-wrap gap-2">
-          {progress.weakZones.map((zone) => (
-            <span key={zone} className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-              <TrendingUp size={14} className="mr-1 inline" />
-              {zone}
-            </span>
-          ))}
-        </div>
+        {progress.weakZones.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {progress.weakZones.map((zone) => (
+              <span key={zone} className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                <TrendingUp size={14} className="mr-1 inline" />
+                {conceptLabel(zone)}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm leading-6 text-slate-400">
+            Слабых зон нет. Они появляются, когда концепт решён с ошибками — тогда он подсветится здесь и в «Практике».
+          </p>
+        )}
       </Panel>
     </div>
   );

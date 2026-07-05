@@ -1,3 +1,4 @@
+import { sqlQuestLessons } from '../../data/sqlQuest';
 import type { UserProgress } from '../../entities/schemas';
 
 // Движок интервального повторения (упрощённый SM-2/HLR):
@@ -67,3 +68,27 @@ export const sqlConceptId = (sqlConcept: string) =>
 
 export const apiConceptId = (domain: string) => `api:${domain}`;
 export const requirementsConceptId = (kind: string) => `req:${kind}`;
+
+const apiConceptLabels: Record<string, string> = {
+  'api:rest': 'REST API — контракт запроса',
+  'api:json': 'JSON Schema — контракт данных',
+  'api:openapi': 'OpenAPI — карта договора',
+  'api:integration': 'Интеграции — устойчивый обмен'
+};
+
+const reqConceptLabels: Record<string, string> = {
+  'req:classification': 'Требования — разбор брифа',
+  'req:questions': 'Требования — уточняющие вопросы',
+  'req:story': 'Требования — user story и критерии'
+};
+
+/** Человеческая подпись микроконцепта по его id (для «Практики» и «Прогресса»). */
+export function conceptLabel(conceptId: string): string {
+  if (conceptId.startsWith('sql:')) {
+    const lesson = sqlQuestLessons.find((l) => sqlConceptId(l.sqlConcept) === conceptId);
+    return `SQL — ${lesson?.sqlConcept ?? conceptId.slice(4)}`;
+  }
+  if (conceptId.startsWith('api:')) return apiConceptLabels[conceptId] ?? conceptId;
+  if (conceptId.startsWith('req:')) return reqConceptLabels[conceptId] ?? conceptId;
+  return conceptId;
+}

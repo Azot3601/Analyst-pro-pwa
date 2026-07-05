@@ -1,8 +1,12 @@
 import { ArrowRight, CheckCircle2, Megaphone, Network, Play, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { tasks } from '../data/tasks';
 import { knowledgeNodes } from '../data/knowledge';
 import { changelog, type ChangeTag } from '../data/changelog';
+import { defaultProgress, getProgress } from '../features/progress/progressDb';
+import { computeSkillLevels } from '../features/progress/skillLevels';
+import type { UserProgress } from '../entities/schemas';
 import { Panel } from '../shared/ui/Panel';
 import { Button } from '../shared/ui/Button';
 
@@ -65,15 +69,24 @@ function WhatsNew() {
   );
 }
 
-const skills = [
-  { title: 'SQL', progress: 42, tone: 'bg-electric' },
-  { title: 'REST API', progress: 36, tone: 'bg-mentor' },
-  { title: 'JSON Schema', progress: 28, tone: 'bg-amber' },
-  { title: 'Интеграции', progress: 31, tone: 'bg-success' },
-  { title: 'НФТ', progress: 18, tone: 'bg-danger' }
-];
+const skillTone: Record<string, string> = {
+  SQL: 'bg-electric',
+  REST: 'bg-mentor',
+  JSON: 'bg-amber',
+  OpenAPI: 'bg-mentor',
+  Интеграции: 'bg-success',
+  Требования: 'bg-danger'
+};
 
 export function HomePage() {
+  const [progress, setProgress] = useState<UserProgress>(defaultProgress);
+
+  useEffect(() => {
+    void getProgress().then(setProgress).catch(() => setProgress(defaultProgress));
+  }, []);
+
+  const skills = useMemo(() => computeSkillLevels(progress), [progress]);
+
   return (
     <div className="space-y-6">
       <WhatsNew />
@@ -137,13 +150,18 @@ export function HomePage() {
         <Panel title="Карта навыков">
           <div className="space-y-4">
             {skills.map((skill) => (
-              <div key={skill.title}>
+              <div key={skill.skill}>
                 <div className="mb-2 flex items-center justify-between text-sm">
-                  <span className="font-medium text-slate-100">{skill.title}</span>
-                  <span className="text-slate-400">{skill.progress}%</span>
+                  <span className="font-medium text-slate-100">{skill.skill}</span>
+                  <span className="text-slate-400">
+                    {skill.value}% <span className="text-slate-600">· {skill.solved}/{skill.total}</span>
+                  </span>
                 </div>
                 <div className="h-2 rounded-full bg-white/10">
-                  <div className={`h-2 rounded-full ${skill.tone}`} style={{ width: `${skill.progress}%` }} />
+                  <div
+                    className={`h-2 rounded-full ${skillTone[skill.skill] ?? 'bg-electric'}`}
+                    style={{ width: `${skill.value}%` }}
+                  />
                 </div>
               </div>
             ))}

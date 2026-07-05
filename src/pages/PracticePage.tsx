@@ -5,6 +5,7 @@ import { sqlQuestLessons } from '../data/sqlQuest';
 import type { UserProgress } from '../entities/schemas';
 import { defaultProgress, getProgress } from '../features/progress/progressDb';
 import {
+  conceptLabel,
   dueConcepts,
   nextDueAt,
   MAX_STRENGTH,
@@ -16,34 +17,21 @@ import { Panel } from '../shared/ui/Panel';
 // «Практика» — очередь интервального повторения: что пора освежить, чтобы
 // навык не утёк. Сначала слабые зоны, затем прочие созревшие концепты.
 
-const apiLabels: Record<string, string> = {
-  'api:rest': 'REST API — контракт запроса',
-  'api:json': 'JSON Schema — контракт данных',
-  'api:openapi': 'OpenAPI — карта договора',
-  'api:integration': 'Интеграции — устойчивый обмен'
-};
-
-const reqLabels: Record<string, string> = {
-  'req:classification': 'Требования — разбор брифа',
-  'req:questions': 'Требования — уточняющие вопросы',
-  'req:story': 'Требования — user story и критерии'
-};
-
+// Подпись концепта берём из общего conceptLabel; здесь добавляем только маршрут,
+// куда ведёт карточка (deep-link в нужный трек тренажёра).
 function describeConcept(conceptId: string): { label: string; to: string } {
+  const label = conceptLabel(conceptId);
   if (conceptId.startsWith('sql:')) {
     const lesson = sqlQuestLessons.find((l) => sqlConceptId(l.sqlConcept) === conceptId);
-    return {
-      label: `SQL — ${lesson?.sqlConcept ?? conceptId.slice(4)}`,
-      to: lesson ? `/trainer?domain=sql&lesson=${lesson.id}` : '/trainer?domain=sql'
-    };
+    return { label, to: lesson ? `/trainer?domain=sql&lesson=${lesson.id}` : '/trainer?domain=sql' };
   }
   if (conceptId.startsWith('api:')) {
-    return { label: apiLabels[conceptId] ?? conceptId, to: `/trainer?domain=${conceptId.slice(4)}` };
+    return { label, to: `/trainer?domain=${conceptId.slice(4)}` };
   }
   if (conceptId.startsWith('req:')) {
-    return { label: reqLabels[conceptId] ?? conceptId, to: '/trainer?domain=requirements' };
+    return { label, to: '/trainer?domain=requirements' };
   }
-  return { label: conceptId, to: '/trainer' };
+  return { label, to: '/trainer' };
 }
 
 function StrengthBar({ strength }: { strength: number }) {

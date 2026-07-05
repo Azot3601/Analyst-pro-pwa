@@ -34,15 +34,9 @@ export const defaultProgress: UserProgress = {
   favoriteKnowledgeIds: [],
   lastRoute: '/',
   lastTaskIdsByDomain: {},
-  skillLevels: {
-    SQL: 18,
-    REST: 14,
-    JSON: 22,
-    OpenAPI: 10,
-    Интеграции: 12,
-    Требования: 20,
-    НФТ: 8
-  },
+  // Уровни навыков считаются на лету из решённых задач (computeSkillLevels) —
+  // здесь ничего не хардкодим, чтобы экран не показывал выдуманные проценты.
+  skillLevels: {},
   // Слабые зоны считаются из реальных результатов повторения — не выдумываются.
   weakZones: [],
   reviews: {},

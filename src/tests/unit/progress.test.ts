@@ -10,11 +10,24 @@ import {
   defaultProgress,
   normalizeProgress
 } from '../../features/progress/progressDb';
+import { computeSkillLevels } from '../../features/progress/skillLevels';
 
 describe('progress defaults', () => {
-  it('starts with local user and skill levels', () => {
+  it('starts with local user and no fabricated skill levels', () => {
     expect(defaultProgress.id).toBe('local-user');
-    expect(defaultProgress.skillLevels.SQL).toBeGreaterThan(0);
+    // Никаких выдуманных процентов: пока ничего не решено — все навыки на нуле.
+    expect(defaultProgress.skillLevels).toEqual({});
+    expect(computeSkillLevels(defaultProgress).every((s) => s.value === 0)).toBe(true);
+  });
+
+  it('computes real SQL skill level from solved lessons', () => {
+    const lesson = sqlQuestLessons[0];
+    const solved = applySqlQuestSolve(defaultProgress, lesson).progress;
+    const sql = computeSkillLevels(solved).find((s) => s.skill === 'SQL');
+
+    expect(sql?.solved).toBe(1);
+    expect(sql?.total).toBe(sqlQuestLessons.length);
+    expect(sql?.value).toBeGreaterThan(0);
   });
 
   it('awards SQL Quest XP once for a solved lesson', () => {
