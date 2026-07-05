@@ -590,19 +590,6 @@ export function SqlQuestWorkspace({ initialLessonId }: { initialLessonId?: strin
         )}
       </div>
 
-      {!expertMode && (
-        <>
-          <SqlPrimer />
-          <SqlDemonstration concept={lesson.sqlConcept} />
-          <SqlBreakdown sql={lesson.starterSql} />
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-electric/80">Зачем это в жизни</div>
-            <p className="mt-1.5 text-sm leading-6 text-slate-200">{lesson.businessContext}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-400">{lesson.explanation}</p>
-          </div>
-        </>
-      )}
-
       {!unlocked && (
         <div className="flex items-center gap-2 rounded-md border border-white/10 bg-black/20 p-3 text-sm text-slate-400">
           <Lock size={15} /> Сначала решите предыдущую задачу.
@@ -678,6 +665,20 @@ export function SqlQuestWorkspace({ initialLessonId }: { initialLessonId?: strin
           </details>
         )}
       </section>
+
+      {/* ponytail: разбор/демонстрация переехали под редактор — сам SQL-редактор теперь в первом экране */}
+      {!expertMode && (
+        <>
+          <SqlPrimer />
+          <SqlDemonstration concept={lesson.sqlConcept} />
+          <SqlBreakdown sql={lesson.starterSql} />
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-electric/80">Зачем это в жизни</div>
+            <p className="mt-1.5 text-sm leading-6 text-slate-200">{lesson.businessContext}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-400">{lesson.explanation}</p>
+          </div>
+        </>
+      )}
 
       <div className="hidden space-y-2 xl:block">
         <Disclosure title="Подробности задачи">

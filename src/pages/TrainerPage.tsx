@@ -1,9 +1,20 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SqlQuestWorkspace } from '../features/trainer/SqlQuestWorkspace';
-import { ApiQuestWorkspace } from '../features/trainer/api/ApiQuestWorkspace';
-import { RequirementsQuestWorkspace } from '../features/trainer/requirements/RequirementsQuestWorkspace';
 import type { ApiTaskDomain } from '../features/progress/progressDb';
+
+// Каждый воркспейс — свой чанк: sql.js едет только с SQL Quest, CodeMirror —
+// только с редакторными доменами.
+const SqlQuestWorkspace = lazy(() =>
+  import('../features/trainer/SqlQuestWorkspace').then((m) => ({ default: m.SqlQuestWorkspace }))
+);
+const ApiQuestWorkspace = lazy(() =>
+  import('../features/trainer/api/ApiQuestWorkspace').then((m) => ({ default: m.ApiQuestWorkspace }))
+);
+const RequirementsQuestWorkspace = lazy(() =>
+  import('../features/trainer/requirements/RequirementsQuestWorkspace').then((m) => ({
+    default: m.RequirementsQuestWorkspace
+  }))
+);
 
 type TrainerDomain = 'sql' | 'requirements' | ApiTaskDomain;
 
@@ -66,13 +77,15 @@ export function TrainerPage() {
         role="tabpanel"
         aria-labelledby={`trainer-tab-${domain}`}
       >
-        {domain === 'sql' ? (
-          <SqlQuestWorkspace initialLessonId={lessonParam} />
-        ) : domain === 'requirements' ? (
-          <RequirementsQuestWorkspace />
-        ) : (
-          <ApiQuestWorkspace domain={domain} />
-        )}
+        <Suspense fallback={<div className="p-10 text-center text-sm text-slate-500">Загрузка модуля…</div>}>
+          {domain === 'sql' ? (
+            <SqlQuestWorkspace initialLessonId={lessonParam} />
+          ) : domain === 'requirements' ? (
+            <RequirementsQuestWorkspace />
+          ) : (
+            <ApiQuestWorkspace domain={domain} />
+          )}
+        </Suspense>
       </div>
     </div>
   );

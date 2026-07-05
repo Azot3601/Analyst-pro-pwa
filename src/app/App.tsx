@@ -1,18 +1,23 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { BookOpen, BrainCircuit, Gauge, GraduationCap, Home, Moon, Repeat, Search, Settings, Sun, TerminalSquare, Trophy, Wrench } from 'lucide-react';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect, type ComponentType } from 'react';
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { CommandPalette } from '../features/search/CommandPalette';
-import { CapstonePage } from '../pages/CapstonePage';
-import { KnowledgePage } from '../pages/KnowledgePage';
-import { HomePage } from '../pages/HomePage';
-import { ProfessionPage } from '../pages/ProfessionPage';
-import { PracticePage } from '../pages/PracticePage';
-import { ProgressPage } from '../pages/ProgressPage';
-import { SettingsPage } from '../pages/SettingsPage';
-import { ToolkitPage } from '../pages/ToolkitPage';
-import { TrainerPage } from '../pages/TrainerPage';
 import { useAppStore } from './store';
+
+// Ленивые страницы: каждая — свой чанк. Тяжёлые зависимости (sql.js в SQL Quest
+// и капстоуне, CodeMirror, reactflow) больше не сидят в общем бандле.
+const named = <T extends string>(p: Promise<Record<T, ComponentType>>, key: T) =>
+  p.then((m) => ({ default: m[key] }));
+const HomePage = lazy(() => named(import('../pages/HomePage'), 'HomePage'));
+const ProfessionPage = lazy(() => named(import('../pages/ProfessionPage'), 'ProfessionPage'));
+const TrainerPage = lazy(() => named(import('../pages/TrainerPage'), 'TrainerPage'));
+const CapstonePage = lazy(() => named(import('../pages/CapstonePage'), 'CapstonePage'));
+const PracticePage = lazy(() => named(import('../pages/PracticePage'), 'PracticePage'));
+const KnowledgePage = lazy(() => named(import('../pages/KnowledgePage'), 'KnowledgePage'));
+const ToolkitPage = lazy(() => named(import('../pages/ToolkitPage'), 'ToolkitPage'));
+const ProgressPage = lazy(() => named(import('../pages/ProgressPage'), 'ProgressPage'));
+const SettingsPage = lazy(() => named(import('../pages/SettingsPage'), 'SettingsPage'));
 
 const nav = [
   { to: '/', label: 'Главная', icon: Home },
@@ -131,17 +136,19 @@ export function App() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.18 }}
               >
-                <Routes location={location}>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/profession" element={<ProfessionPage />} />
-                  <Route path="/trainer" element={<TrainerPage />} />
-                  <Route path="/capstone" element={<CapstonePage />} />
-                  <Route path="/practice" element={<PracticePage />} />
-                  <Route path="/knowledge" element={<KnowledgePage />} />
-                  <Route path="/toolkit" element={<ToolkitPage />} />
-                  <Route path="/progress" element={<ProgressPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                </Routes>
+                <Suspense fallback={<div className="p-10 text-center text-sm text-slate-500">Загрузка…</div>}>
+                  <Routes location={location}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/profession" element={<ProfessionPage />} />
+                    <Route path="/trainer" element={<TrainerPage />} />
+                    <Route path="/capstone" element={<CapstonePage />} />
+                    <Route path="/practice" element={<PracticePage />} />
+                    <Route path="/knowledge" element={<KnowledgePage />} />
+                    <Route path="/toolkit" element={<ToolkitPage />} />
+                    <Route path="/progress" element={<ProgressPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Routes>
+                </Suspense>
               </motion.div>
             </AnimatePresence>
           </main>

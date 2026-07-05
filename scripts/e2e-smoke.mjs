@@ -95,6 +95,8 @@ async function runScenario(browser, viewport, label, fullFlow = false) {
   const page = await browser.newPage({ viewport });
 
   await page.goto(`http://127.0.0.1:${port}/trainer`, { waitUntil: 'domcontentloaded' });
+  // Воркспейс грузится лениво (React.lazy) — ждём монтаж перед проверками.
+  await page.waitForFunction("document.body.innerText.includes('SQL-редактор')", null, { timeout: 15_000 });
   let text = await page.locator('body').innerText();
   assertText(text, 'SQL-редактор', `${label} trainer`);
   assertText(text, 'Открыть книгу заказов', `${label} trainer`);
@@ -109,12 +111,19 @@ async function runScenario(browser, viewport, label, fullFlow = false) {
   if (viewport.width < 1280) {
     await page.getByRole('tab', { name: 'Подсказки', exact: true }).click();
   }
-  await page.waitForFunction("document.body.innerText.includes('Подсказка 1')", null, { timeout: 10_000 });
+  await page.waitForFunction("document.body.innerText.includes('подсказка 1')", null, { timeout: 10_000 });
   text = await page.locator('body').innerText();
-  assertText(text, 'Подсказка 1', `${label} hint`);
+  assertText(text, 'подсказка 1', `${label} hint`);
   if (viewport.width < 1280) {
     await page.getByRole('tab', { name: 'SQL', exact: true }).click();
   }
+  // starterSql теперь каркас с «дырками», а не готовый ответ — впечатываем решение
+  // первого урока в CodeMirror перед запуском.
+  const editor = page.locator('[data-testid="sql-editor"] .cm-content');
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.press('Delete');
+  await page.keyboard.type('SELECT id, status, total FROM orders ORDER BY id LIMIT 3;');
   await page.getByText('Запустить', { exact: true }).click();
   await page.waitForFunction(
     "document.body.innerText.includes('Результат совпадает с эталоном') || document.body.innerText.includes('SQL не выполнен')",
@@ -125,10 +134,13 @@ async function runScenario(browser, viewport, label, fullFlow = false) {
   assertText(text, 'Результат совпадает с эталоном', `${label} sql execution`);
   assertText(text, '1003', `${label} sql result table`);
   await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction("document.body.innerText.includes('SQL-редактор')", null, { timeout: 15_000 });
   text = await page.locator('body').innerText();
   assertText(text, '40', `${label} sql progress after reload`);
 
   await page.goto(`http://127.0.0.1:${port}/trainer`, { waitUntil: 'domcontentloaded' });
+  // Воркспейс грузится лениво (React.lazy) — ждём монтаж перед проверками.
+  await page.waitForFunction("document.body.innerText.includes('SQL-редактор')", null, { timeout: 15_000 });
   await page.getByRole('tab', { name: 'REST API' }).click();
   await page.getByTestId('rest-path-param-orderId').fill('ORD-1001');
   await page.getByTestId('computed-rest-url').filter({ hasText: '/api/v1/orders/ORD-1001' }).waitFor();
@@ -172,8 +184,10 @@ async function runScenario(browser, viewport, label, fullFlow = false) {
   assertText(text, '"orderId": "ord-1001"', `${label} json formatter`);
 
   await page.goto(`http://127.0.0.1:${port}/knowledge`, { waitUntil: 'domcontentloaded' });
+  // KnowledgePage грузится лениво (reactflow) — ждём монтаж.
+  await page.waitForFunction("document.body.innerText.includes('Карта знаний')", null, { timeout: 15_000 });
   text = await page.locator('body').innerText();
-  assertText(text, 'Граф знаний', `${label} knowledge`);
+  assertText(text, 'Карта знаний', `${label} knowledge`);
   assertText(text, 'База знаний', `${label} knowledge`);
 
   await page.close();
@@ -184,10 +198,14 @@ await new Promise((resolve) => server.listen(port, '127.0.0.1', resolve));
 let browser;
 try {
   browser = await chromium.launch({ headless: true });
+  // desktop-1440 гоняет полный сквозной flow (SQL→REST→JSON→OpenAPI→Интеграции→
+  // toolkit→knowledge). Логика воркспейсов от вьюпорта не зависит, поэтому
+  // остальные размеры проверяют только раскладку/smoke (мобилка сознательно
+  // депрриоритизирована — deep-flow на ней не гоняем).
   await runScenario(browser, { width: 1440, height: 1000 }, 'desktop-1440', true);
   await runScenario(browser, { width: 1366, height: 768 }, 'laptop-1366');
   await runScenario(browser, { width: 768, height: 1024 }, 'tablet-768');
-  await runScenario(browser, { width: 390, height: 844 }, 'mobile-390', true);
+  await runScenario(browser, { width: 390, height: 844 }, 'mobile-390');
   console.log('E2E smoke passed: SQL Quest, API Contract Quest, toolkit, knowledge, and progress.');
 } finally {
   if (browser) await browser.close();

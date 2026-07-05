@@ -1,7 +1,11 @@
 import { CornerDownLeft, Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { searchItems } from './searchIndex';
+import type { SearchItem } from './searchIndex';
+
+// Индекс тянет все data-файлы (sqlQuest/apiQuest/knowledgeRich) — грузим его
+// лениво при первом открытии палитры, чтобы он не сидел в стартовом бандле.
+type SearchFn = (query: string) => SearchItem[];
 
 // Командная палитра: Ctrl/⌘+K открывает глобальный поиск по базе знаний,
 // задачам и страницам. Навигация стрелками, Enter — переход, Esc — закрыть.
@@ -20,8 +24,9 @@ export function CommandPalette() {
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const [searchFn, setSearchFn] = useState<SearchFn | null>(null);
 
-  const results = useMemo(() => searchItems(query), [query]);
+  const results = useMemo(() => (searchFn ? searchFn(query) : []), [searchFn, query]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -47,8 +52,11 @@ export function CommandPalette() {
       setActive(0);
       // Фокус после появления модалки.
       requestAnimationFrame(() => inputRef.current?.focus());
+      if (!searchFn) {
+        void import('./searchIndex').then((m) => setSearchFn(() => m.searchItems));
+      }
     }
-  }, [open]);
+  }, [open, searchFn]);
 
   useEffect(() => setActive(0), [query]);
 
