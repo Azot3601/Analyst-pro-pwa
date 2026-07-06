@@ -15,12 +15,14 @@ const RequirementsQuestWorkspace = lazy(() =>
     default: m.RequirementsQuestWorkspace
   }))
 );
+const ErdWorkspace = lazy(() => import('../features/trainer/erd/ErdWorkspace').then((m) => ({ default: m.ErdWorkspace })));
 
-type TrainerDomain = 'sql' | 'requirements' | ApiTaskDomain;
+type TrainerDomain = 'sql' | 'requirements' | 'erd' | ApiTaskDomain;
 
 const domains: Array<{ id: TrainerDomain; label: string }> = [
   { id: 'requirements', label: 'Требования' },
   { id: 'sql', label: 'SQL Quest' },
+  { id: 'erd', label: 'ERD' },
   { id: 'rest', label: 'REST API' },
   { id: 'json', label: 'JSON' },
   { id: 'openapi', label: 'OpenAPI' },
@@ -45,7 +47,7 @@ export function TrainerPage() {
         <div
           role="tablist"
           aria-label="Разделы тренажёра"
-          className="grid min-w-[660px] grid-cols-6 gap-2 rounded-lg border border-white/10 bg-white/[0.055] p-2"
+          className="grid min-w-[760px] grid-cols-7 gap-2 rounded-lg border border-white/10 bg-white/[0.055] p-2"
         >
           {domains.map((item) => (
             <button
@@ -82,6 +84,8 @@ export function TrainerPage() {
             <SqlQuestWorkspace initialLessonId={lessonParam} />
           ) : domain === 'requirements' ? (
             <RequirementsQuestWorkspace />
+          ) : domain === 'erd' ? (
+            <ErdWorkspace />
           ) : (
             <ApiQuestWorkspace domain={domain} />
           )}

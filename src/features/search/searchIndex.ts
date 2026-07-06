@@ -19,6 +19,7 @@ const pages: SearchItem[] = [
   { id: 'p-profession', title: 'Профессия', subtitle: 'обзор профессии аналитика', category: 'Навигация', to: '/profession' },
   { id: 'p-trainer', title: 'Тренажёр', subtitle: 'SQL, API, требования', category: 'Навигация', to: '/trainer' },
   { id: 'p-capstone', title: 'Капстоун', subtitle: 'сквозной кейс: бриф → требования → контракт → SQL', category: 'Навигация', to: '/capstone' },
+  { id: 'p-erd', title: 'ERD-конструктор', subtitle: 'проектирование модели данных кейса', category: 'Навигация', to: '/trainer?domain=erd' },
   { id: 'p-practice', title: 'Практика', subtitle: 'интервальное повторение', category: 'Навигация', to: '/practice' },
   { id: 'p-knowledge', title: 'База знаний', subtitle: 'статьи и термины', category: 'Навигация', to: '/knowledge' },
   { id: 'p-toolkit', title: 'Инструментарий', subtitle: 'шаблоны и чек-листы', category: 'Навигация', to: '/toolkit' },

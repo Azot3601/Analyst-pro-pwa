@@ -2,6 +2,9 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default {
+  // reactflow предбандлится Vite'ом отдельно — dedupe гарантирует один инстанс React.
+  resolve: { dedupe: ['react', 'react-dom'] },
+  optimizeDeps: { include: ['reactflow'] },
   plugins: [
     react(),
     VitePWA({

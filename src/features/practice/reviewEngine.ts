@@ -90,5 +90,6 @@ export function conceptLabel(conceptId: string): string {
   }
   if (conceptId.startsWith('api:')) return apiConceptLabels[conceptId] ?? conceptId;
   if (conceptId.startsWith('req:')) return reqConceptLabels[conceptId] ?? conceptId;
+  if (conceptId.startsWith('erd:')) return 'ERD — модель данных кейса';
   return conceptId;
 }

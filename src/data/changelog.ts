@@ -6,6 +6,14 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.13',
+    title: 'ERD-конструктор',
+    changes: [
+      { tag: 'Новое', text: 'Вкладка ERD в тренажёре: проектируй сущности с полями и связи с кардинальностью (1-1/1-N/N-N)', to: '/trainer?domain=erd' },
+      { tag: 'Новое', text: 'Проверка ERD структурная: сверяет сущности, поля и связи с эталоном кейса, а не расположение узлов', to: '/trainer?domain=erd' }
+    ]
+  },
+  {
     version: 'v0.12',
     title: 'Сквозной кейс: одни сущности во всех инструментах',
     changes: [
