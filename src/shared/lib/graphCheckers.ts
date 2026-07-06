@@ -227,3 +227,69 @@ export function compareBpmnGraph(submission: BpmnGraph, reference: BpmnReference
 
   return finish(diagnostics);
 }
+
+// ── Use Case ─────────────────────────────────────────────────────────────────
+
+export type UseCaseDraft = {
+  actor: string;
+  precondition: string;
+  mainFlow: string[];
+  alternateFlows: string[];
+  postcondition: string;
+};
+
+// Грубый список глаголов-маркеров действия (стемы). Не NLP — эвристика атомарности.
+const actionVerbStems = [
+  'выбира', 'введ', 'ввод', 'нажим', 'провер', 'созда', 'сохран', 'отправ', 'показыва',
+  'открыва', 'подтвержда', 'выставля', 'отменя', 'резервир', 'списыва', 'начисл', 'уведомл',
+  'запраш', 'получа', 'формир', 'рассчит', 'назнача', 'брониру', 'указыва', 'добавля'
+];
+
+const nonEmpty = (list: string[]) => list.map((s) => s.trim()).filter(Boolean);
+
+/** Шаг неатомарен, если в нём соединены несколько действий (союз/несколько глаголов). */
+function isNonAtomic(step: string): boolean {
+  const text = step.toLowerCase();
+  if (/\s(и|затем|потом|после чего)\s/.test(text)) return true;
+  const verbs = actionVerbStems.filter((stem) => text.includes(stem));
+  return verbs.length > 1;
+}
+
+export function checkUseCaseCompleteness(draft: UseCaseDraft): ApiQuestCheckResult {
+  const diagnostics: ApiQuestDiagnostic[] = [];
+  const main = nonEmpty(draft.mainFlow);
+  const alt = nonEmpty(draft.alternateFlows);
+
+  if (!draft.actor.trim()) {
+    diagnostics.push(diag('uc-no-actor', 'Не указан актор.', 'Назови действующее лицо (кто получает ценность).'));
+  }
+  if (!draft.precondition.trim()) {
+    diagnostics.push(diag('uc-no-precondition', 'Нет предусловия.', 'Опиши, что должно быть верно до старта сценария.'));
+  }
+  if (main.length < 3) {
+    diagnostics.push(diag('uc-short-main-flow', 'Основной поток слишком короткий.', 'Опиши минимум 3 шага основного сценария.'));
+  }
+  if (alt.length < 1) {
+    diagnostics.push(diag('uc-no-alternate', 'Нет альтернативного/исключительного потока.', 'Добавь хотя бы один альтернативный сценарий (например, ошибку или отказ).'));
+  }
+  if (!draft.postcondition.trim()) {
+    diagnostics.push(diag('uc-no-postcondition', 'Нет постусловия.', 'Опиши результат сценария (что стало верным после).'));
+  }
+
+  // Атомарность шагов — предупреждение, не блокирует полноту.
+  const nonAtomic = main.filter(isNonAtomic);
+  if (nonAtomic.length) {
+    diagnostics.push({
+      ...diag(
+        'uc-non-atomic-step',
+        'Некоторые шаги описывают несколько действий сразу.',
+        'Разбей шаг на отдельные: один глагол действия на строку.',
+        nonAtomic.map((s) => `«${s}»`)
+      ),
+      severity: 'warning',
+      knowledgeId: 'use-story'
+    });
+  }
+
+  return finish(diagnostics);
+}

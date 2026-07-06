@@ -37,6 +37,9 @@ function describeConcept(conceptId: string): { label: string; to: string } {
   if (conceptId.startsWith('bpmn:')) {
     return { label, to: '/trainer?domain=bpmn' };
   }
+  if (conceptId.startsWith('usecase:')) {
+    return { label, to: '/trainer?domain=usecase' };
+  }
   return { label, to: '/trainer' };
 }
 

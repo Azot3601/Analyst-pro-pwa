@@ -6,6 +6,14 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.15',
+    title: 'Use Case конструктор',
+    changes: [
+      { tag: 'Новое', text: 'Вкладка Use Case: структурированная форма — актор, предусловие, основной и альтернативные потоки, постусловие', to: '/trainer?domain=usecase' },
+      { tag: 'Новое', text: 'Проверка полноты сценария + эвристика атомарности шага (один глагол действия на строку)', to: '/trainer?domain=usecase' }
+    ]
+  },
+  {
     version: 'v0.14',
     title: 'BPMN-конструктор',
     changes: [
