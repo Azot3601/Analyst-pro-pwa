@@ -24,7 +24,9 @@ import type { SophieState } from '../../shared/ui/SophiePortrait';
 import { mentor } from '../../data/mentor';
 import { SqlDemonstration } from './SqlDemonstration';
 import { SqlBreakdown, SqlPrimer } from './SqlBreakdown';
-import { sqlConceptId } from '../practice/reviewEngine';
+import { insightConceptId, sqlConceptId } from '../practice/reviewEngine';
+import { findInsightCard } from '../../data/insightCards';
+import { InsightCard } from '../microlearning/InsightCard';
 import {
   getNextRankForXp,
   getRankForXp,
@@ -360,8 +362,18 @@ function HintsPanel({
   canReveal: boolean;
   onReveal: () => void;
 }) {
+  // Подсказка уровня 0 — карточка-контраст понятий перед текстовыми подсказками.
+  const insight = findInsightCard(lesson.sqlConcept);
   return (
     <Panel title="Подсказки">
+      {insight && (
+        <div className="mb-3">
+          <InsightCard
+            card={insight}
+            onReviewed={() => void recordReview(insightConceptId(insight.id), true).catch(() => undefined)}
+          />
+        </div>
+      )}
       <Button variant="soft" className="mb-3 w-full" onClick={onReveal} disabled={!canReveal}>
         <Lightbulb size={15} /> Открыть следующую
       </Button>

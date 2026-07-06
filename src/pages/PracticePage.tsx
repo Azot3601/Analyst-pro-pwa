@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { sqlQuestLessons } from '../data/sqlQuest';
 import type { UserProgress } from '../entities/schemas';
-import { defaultProgress, getProgress } from '../features/progress/progressDb';
+import { defaultProgress, getProgress, recordReview } from '../features/progress/progressDb';
+import { insightCards } from '../data/insightCards';
+import { InsightCard } from '../features/microlearning/InsightCard';
 import {
   conceptLabel,
   dueConcepts,
@@ -89,8 +91,9 @@ function DueCard({ item }: { item: DueConcept }) {
 export function PracticePage() {
   const [progress, setProgress] = useState<UserProgress>(defaultProgress);
 
+  const reload = () => void getProgress().then(setProgress).catch(() => setProgress(defaultProgress));
   useEffect(() => {
-    void getProgress().then(setProgress).catch(() => setProgress(defaultProgress));
+    reload();
   }, []);
 
   const reviews = progress.reviews ?? {};
@@ -131,9 +134,21 @@ export function PracticePage() {
       <Panel title="Пора повторить">
         {due.length > 0 ? (
           <div className="space-y-2">
-            {due.map((item) => (
-              <DueCard key={item.conceptId} item={item} />
-            ))}
+            {due.map((item) => {
+              if (item.conceptId.startsWith('insight:')) {
+                const card = insightCards.find((c) => c.id === item.conceptId.slice(8));
+                if (card) {
+                  return (
+                    <InsightCard
+                      key={item.conceptId}
+                      card={card}
+                      onReviewed={() => recordReview(item.conceptId, true).then(reload)}
+                    />
+                  );
+                }
+              }
+              return <DueCard key={item.conceptId} item={item} />;
+            })}
           </div>
         ) : total > 0 ? (
           <div className="flex items-center gap-3 rounded-xl border border-success/20 bg-success/[0.06] p-4 text-sm text-slate-200">

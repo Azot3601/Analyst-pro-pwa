@@ -6,6 +6,14 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.19',
+    title: 'Микроконтент: карточки-контрасты понятий',
+    changes: [
+      { tag: 'Новое', text: 'Карточки-контрасты (LEFT vs INNER JOIN, use case vs user story, идемпотентность vs атомарность) со схемой и озвучкой — как подсказка уровня 0 в SQL', to: '/trainer?domain=sql' },
+      { tag: 'Новое', text: 'Карточки попадают в интервальное повторение — освежаются в «Практике» по расписанию', to: '/practice' }
+    ]
+  },
+  {
     version: 'v0.18',
     title: 'Матрица навыков BABOK',
     changes: [

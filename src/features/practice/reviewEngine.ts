@@ -1,3 +1,4 @@
+import { insightCards } from '../../data/insightCards';
 import { sqlQuestLessons } from '../../data/sqlQuest';
 import type { UserProgress } from '../../entities/schemas';
 
@@ -68,6 +69,7 @@ export const sqlConceptId = (sqlConcept: string) =>
 
 export const apiConceptId = (domain: string) => `api:${domain}`;
 export const requirementsConceptId = (kind: string) => `req:${kind}`;
+export const insightConceptId = (id: string) => `insight:${id}`;
 
 const apiConceptLabels: Record<string, string> = {
   'api:rest': 'REST API — контракт запроса',
@@ -95,5 +97,9 @@ export function conceptLabel(conceptId: string): string {
   if (conceptId.startsWith('usecase:')) return 'Use Case — сценарий кейса';
   if (conceptId.startsWith('interview:')) return 'Интервью — элиситация требований';
   if (conceptId.startsWith('defect:')) return 'Дефекты требований — диагностика';
+  if (conceptId.startsWith('insight:')) {
+    const card = insightCards.find((c) => c.id === conceptId.slice(8));
+    return `Разбор понятий — ${card?.title ?? conceptId.slice(8)}`;
+  }
   return conceptId;
 }
