@@ -6,6 +6,13 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.17',
+    title: 'Диагностика дефектов требований',
+    changes: [
+      { tag: 'Новое', text: 'Вкладка «Дефекты»: находи ошибку в артефакте и называй тип — неатомарность, неполнота, противоречивость, невалидируемость', to: '/trainer?domain=defects' }
+    ]
+  },
+  {
     version: 'v0.16',
     title: 'Симуляция интервью со стейкхолдером',
     changes: [

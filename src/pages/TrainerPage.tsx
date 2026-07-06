@@ -19,8 +19,9 @@ const ErdWorkspace = lazy(() => import('../features/trainer/erd/ErdWorkspace').t
 const BpmnWorkspace = lazy(() => import('../features/trainer/bpmn/BpmnWorkspace').then((m) => ({ default: m.BpmnWorkspace })));
 const UseCaseWorkspace = lazy(() => import('../features/trainer/usecase/UseCaseWorkspace').then((m) => ({ default: m.UseCaseWorkspace })));
 const InterviewWorkspace = lazy(() => import('../features/trainer/interview/InterviewWorkspace').then((m) => ({ default: m.InterviewWorkspace })));
+const DefectWorkspace = lazy(() => import('../features/trainer/defects/DefectWorkspace').then((m) => ({ default: m.DefectWorkspace })));
 
-type TrainerDomain = 'sql' | 'requirements' | 'erd' | 'bpmn' | 'usecase' | 'interview' | ApiTaskDomain;
+type TrainerDomain = 'sql' | 'requirements' | 'erd' | 'bpmn' | 'usecase' | 'interview' | 'defects' | ApiTaskDomain;
 
 const domains: Array<{ id: TrainerDomain; label: string }> = [
   { id: 'requirements', label: 'Требования' },
@@ -29,6 +30,7 @@ const domains: Array<{ id: TrainerDomain; label: string }> = [
   { id: 'erd', label: 'ERD' },
   { id: 'bpmn', label: 'BPMN' },
   { id: 'usecase', label: 'Use Case' },
+  { id: 'defects', label: 'Дефекты' },
   { id: 'rest', label: 'REST API' },
   { id: 'json', label: 'JSON' },
   { id: 'openapi', label: 'OpenAPI' },
@@ -53,7 +55,7 @@ export function TrainerPage() {
         <div
           role="tablist"
           aria-label="Разделы тренажёра"
-          className="grid min-w-[1060px] grid-cols-10 gap-2 rounded-lg border border-white/10 bg-white/[0.055] p-2"
+          className="grid min-w-[1160px] grid-cols-11 gap-2 rounded-lg border border-white/10 bg-white/[0.055] p-2"
         >
           {domains.map((item) => (
             <button
@@ -98,6 +100,8 @@ export function TrainerPage() {
             <UseCaseWorkspace />
           ) : domain === 'interview' ? (
             <InterviewWorkspace />
+          ) : domain === 'defects' ? (
+            <DefectWorkspace />
           ) : (
             <ApiQuestWorkspace domain={domain} />
           )}

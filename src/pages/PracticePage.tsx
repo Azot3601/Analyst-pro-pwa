@@ -43,6 +43,9 @@ function describeConcept(conceptId: string): { label: string; to: string } {
   if (conceptId.startsWith('interview:')) {
     return { label, to: '/trainer?domain=interview' };
   }
+  if (conceptId.startsWith('defect:')) {
+    return { label, to: '/trainer?domain=defects' };
+  }
   return { label, to: '/trainer' };
 }
 

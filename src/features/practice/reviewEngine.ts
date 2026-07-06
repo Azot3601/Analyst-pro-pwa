@@ -94,5 +94,6 @@ export function conceptLabel(conceptId: string): string {
   if (conceptId.startsWith('bpmn:')) return 'BPMN — процесс кейса';
   if (conceptId.startsWith('usecase:')) return 'Use Case — сценарий кейса';
   if (conceptId.startsWith('interview:')) return 'Интервью — элиситация требований';
+  if (conceptId.startsWith('defect:')) return 'Дефекты требований — диагностика';
   return conceptId;
 }
