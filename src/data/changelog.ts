@@ -6,6 +6,13 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.18',
+    title: 'Матрица навыков BABOK',
+    changes: [
+      { tag: 'Новое', text: 'На странице «Профессия» — матрица навыков по областям знаний BABOK: видно, где закрыто, а где пробел', to: '/profession' }
+    ]
+  },
+  {
     version: 'v0.17',
     title: 'Диагностика дефектов требований',
     changes: [

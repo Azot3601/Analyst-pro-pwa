@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { SkillMatrixSection } from '../features/profession/SkillMatrixSection';
 import {
   AlertTriangle,
   Brain,
@@ -131,6 +132,8 @@ export function ProfessionPage() {
               увидеть краткую сводку, или нажми, чтобы открыть в базе знаний.
             </p>
           </header>
+
+          <SkillMatrixSection />
 
           <Section id="kto" icon={<Compass size={18} />} title="Кто это">
             <P>
