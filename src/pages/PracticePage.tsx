@@ -34,6 +34,9 @@ function describeConcept(conceptId: string): { label: string; to: string } {
   if (conceptId.startsWith('erd:')) {
     return { label, to: '/trainer?domain=erd' };
   }
+  if (conceptId.startsWith('bpmn:')) {
+    return { label, to: '/trainer?domain=bpmn' };
+  }
   return { label, to: '/trainer' };
 }
 

@@ -6,6 +6,14 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.14',
+    title: 'BPMN-конструктор',
+    changes: [
+      { tag: 'Новое', text: 'Вкладка BPMN в тренажёре: собери процесс из палитры (старт, задача, шлюзы, исключение, конец)', to: '/trainer?domain=bpmn' },
+      { tag: 'Новое', text: 'Проверка процесса: достижимость «конца» из каждого узла + обязательная ветка-исключение (неявка гостя)', to: '/trainer?domain=bpmn' }
+    ]
+  },
+  {
     version: 'v0.13',
     title: 'ERD-конструктор',
     changes: [
