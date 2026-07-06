@@ -40,6 +40,9 @@ function describeConcept(conceptId: string): { label: string; to: string } {
   if (conceptId.startsWith('usecase:')) {
     return { label, to: '/trainer?domain=usecase' };
   }
+  if (conceptId.startsWith('interview:')) {
+    return { label, to: '/trainer?domain=interview' };
+  }
   return { label, to: '/trainer' };
 }
 

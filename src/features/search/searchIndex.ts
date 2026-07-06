@@ -22,6 +22,7 @@ const pages: SearchItem[] = [
   { id: 'p-erd', title: 'ERD-конструктор', subtitle: 'проектирование модели данных кейса', category: 'Навигация', to: '/trainer?domain=erd' },
   { id: 'p-bpmn', title: 'BPMN-конструктор', subtitle: 'моделирование процесса с ветками-исключениями', category: 'Навигация', to: '/trainer?domain=bpmn' },
   { id: 'p-usecase', title: 'Use Case', subtitle: 'сценарий: актор, потоки, пред/постусловия', category: 'Навигация', to: '/trainer?domain=usecase' },
+  { id: 'p-interview', title: 'Интервью со стейкхолдером', subtitle: 'симуляция элиситации: выбор вопросов', category: 'Навигация', to: '/trainer?domain=interview' },
   { id: 'p-practice', title: 'Практика', subtitle: 'интервальное повторение', category: 'Навигация', to: '/practice' },
   { id: 'p-knowledge', title: 'База знаний', subtitle: 'статьи и термины', category: 'Навигация', to: '/knowledge' },
   { id: 'p-toolkit', title: 'Инструментарий', subtitle: 'шаблоны и чек-листы', category: 'Навигация', to: '/toolkit' },

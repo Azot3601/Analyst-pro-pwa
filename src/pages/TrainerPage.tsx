@@ -18,11 +18,13 @@ const RequirementsQuestWorkspace = lazy(() =>
 const ErdWorkspace = lazy(() => import('../features/trainer/erd/ErdWorkspace').then((m) => ({ default: m.ErdWorkspace })));
 const BpmnWorkspace = lazy(() => import('../features/trainer/bpmn/BpmnWorkspace').then((m) => ({ default: m.BpmnWorkspace })));
 const UseCaseWorkspace = lazy(() => import('../features/trainer/usecase/UseCaseWorkspace').then((m) => ({ default: m.UseCaseWorkspace })));
+const InterviewWorkspace = lazy(() => import('../features/trainer/interview/InterviewWorkspace').then((m) => ({ default: m.InterviewWorkspace })));
 
-type TrainerDomain = 'sql' | 'requirements' | 'erd' | 'bpmn' | 'usecase' | ApiTaskDomain;
+type TrainerDomain = 'sql' | 'requirements' | 'erd' | 'bpmn' | 'usecase' | 'interview' | ApiTaskDomain;
 
 const domains: Array<{ id: TrainerDomain; label: string }> = [
   { id: 'requirements', label: 'Требования' },
+  { id: 'interview', label: 'Интервью' },
   { id: 'sql', label: 'SQL Quest' },
   { id: 'erd', label: 'ERD' },
   { id: 'bpmn', label: 'BPMN' },
@@ -51,7 +53,7 @@ export function TrainerPage() {
         <div
           role="tablist"
           aria-label="Разделы тренажёра"
-          className="grid min-w-[960px] grid-cols-9 gap-2 rounded-lg border border-white/10 bg-white/[0.055] p-2"
+          className="grid min-w-[1060px] grid-cols-10 gap-2 rounded-lg border border-white/10 bg-white/[0.055] p-2"
         >
           {domains.map((item) => (
             <button
@@ -94,6 +96,8 @@ export function TrainerPage() {
             <BpmnWorkspace />
           ) : domain === 'usecase' ? (
             <UseCaseWorkspace />
+          ) : domain === 'interview' ? (
+            <InterviewWorkspace />
           ) : (
             <ApiQuestWorkspace domain={domain} />
           )}

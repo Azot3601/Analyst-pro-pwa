@@ -6,6 +6,14 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.16',
+    title: 'Симуляция интервью со стейкхолдером',
+    changes: [
+      { tag: 'Новое', text: 'Вкладка «Интервью»: выбирай вопросы в диалоге с менеджером — открытые раскрывают требования, наводящие тратят ход', to: '/trainer?domain=interview' },
+      { tag: 'Новое', text: 'Итог интервью: покрытие обязательных требований + метрика качества вопросов. Полностью локально, без ИИ', to: '/trainer?domain=interview' }
+    ]
+  },
+  {
     version: 'v0.15',
     title: 'Use Case конструктор',
     changes: [
