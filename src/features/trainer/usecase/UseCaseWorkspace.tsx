@@ -104,6 +104,15 @@ export function UseCaseWorkspace() {
       <div className="space-y-3">
         <Panel title="Задача">
           <p className="text-sm leading-6 text-slate-300">{reservationUseCaseTask}</p>
+          <div className="mt-3 rounded-lg border border-electric/20 bg-electric/[0.05] p-3">
+            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-electric/80">Требования к полноте</div>
+            <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-slate-300">
+              <li>Указан актор и предусловие.</li>
+              <li>В основном потоке минимум 3 шага, по одному действию на шаг.</li>
+              <li>Есть хотя бы один альтернативный/исключительный поток.</li>
+              <li>Указано постусловие (результат сценария).</li>
+            </ul>
+          </div>
         </Panel>
 
         {result && !result.ok && (

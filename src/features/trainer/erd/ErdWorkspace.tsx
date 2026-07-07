@@ -17,7 +17,7 @@ import ReactFlow, {
   type NodeProps
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { CheckCircle2, Network, Plus, RotateCcw } from 'lucide-react';
+import { CheckCircle2, Network, Plus, RotateCcw, X } from 'lucide-react';
 import { reservationErd, reservationErdTask } from '../../../data/cases/reservationCase/referenceErd';
 import { markTaskSolved, recordReview } from '../../progress/progressDb';
 import { compareErdGraph, type Cardinality, type ErdGraph } from '../../../shared/lib/graphCheckers';
@@ -27,14 +27,26 @@ import { Panel } from '../../../shared/ui/Panel';
 
 const ERD_TASK_ID = 'erd-reservation';
 
-type EntityData = { name: string; fields: string; onChange: (patch: Partial<{ name: string; fields: string }>) => void };
-type RelationData = { cardinality: Cardinality; onChange: (id: string, value: Cardinality) => void };
+type EntityData = {
+  name: string;
+  fields: string;
+  onChange: (patch: Partial<{ name: string; fields: string }>) => void;
+  onDelete: () => void;
+};
+type RelationData = { cardinality: Cardinality; onChange: (id: string, value: Cardinality) => void; onDelete: (id: string) => void };
 
 // Узел = сущность с полями внутри (textarea «имя: тип»), а не отдельные фигуры.
 function EntityNode({ data }: NodeProps<EntityData>) {
   return (
-    <div className="w-52 rounded-lg border border-electric/40 bg-graphite/95 p-2 shadow-lift">
+    <div className="group relative w-52 rounded-lg border border-electric/40 bg-graphite/95 p-2 shadow-lift">
       <Handle type="target" position={Position.Left} className="!bg-electric" />
+      <button
+        onClick={data.onDelete}
+        title="Удалить сущность"
+        className="nodrag absolute -right-2 -top-2 z-10 grid size-5 place-items-center rounded-full border border-white/20 bg-graphite text-slate-400 hover:border-danger/50 hover:text-danger"
+      >
+        <X size={12} />
+      </button>
       <input
         value={data.name}
         onChange={(event) => data.onChange({ name: event.target.value })}
@@ -53,23 +65,34 @@ function EntityNode({ data }: NodeProps<EntityData>) {
   );
 }
 
-// Ребро с dropdown кардинальности прямо на связи (data.cardinality).
+// Ребро с dropdown кардинальности и кнопкой удаления прямо на связи.
 function RelationEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data }: EdgeProps<RelationData>) {
   const [path, labelX, labelY] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
   return (
     <>
       <BaseEdge id={id} path={path} style={{ stroke: '#6ea8fe', strokeWidth: 1.5 }} />
       <EdgeLabelRenderer>
-        <select
-          value={data?.cardinality ?? '1-N'}
-          onChange={(event) => data?.onChange(id, event.target.value as Cardinality)}
+        <div
           style={{ position: 'absolute', transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, pointerEvents: 'all' }}
-          className="nodrag nopan rounded border border-electric/40 bg-graphite px-1 py-0.5 text-[11px] font-semibold text-electric"
+          className="nodrag nopan flex items-center gap-1"
         >
-          <option value="1-1">1-1</option>
-          <option value="1-N">1-N</option>
-          <option value="N-N">N-N</option>
-        </select>
+          <select
+            value={data?.cardinality ?? '1-N'}
+            onChange={(event) => data?.onChange(id, event.target.value as Cardinality)}
+            className="rounded border border-electric/40 bg-graphite px-1 py-0.5 text-[11px] font-semibold text-electric"
+          >
+            <option value="1-1">1-1</option>
+            <option value="1-N">1-N</option>
+            <option value="N-N">N-N</option>
+          </select>
+          <button
+            onClick={() => data?.onDelete(id)}
+            title="Удалить связь"
+            className="grid size-4 place-items-center rounded-full border border-white/20 bg-graphite text-slate-400 hover:border-danger/50 hover:text-danger"
+          >
+            <X size={10} />
+          </button>
+        </div>
       </EdgeLabelRenderer>
     </>
   );
@@ -112,40 +135,64 @@ function ErdCanvas() {
     [setEdges]
   );
 
-  // Инициализация один раз (updateNode стабильна).
+  const deleteEdge = useCallback((id: string) => setEdges((current) => current.filter((edge) => edge.id !== id)), [setEdges]);
+
+  const deleteNode = useCallback(
+    (id: string) => {
+      setNodes((current) => current.filter((node) => node.id !== id));
+      setEdges((current) => current.filter((edge) => edge.source !== id && edge.target !== id));
+    },
+    [setNodes, setEdges]
+  );
+
+  const nodeData = useCallback(
+    (id: string, name: string, fields: string): EntityData => ({
+      name,
+      fields,
+      onChange: (patch) => updateNode(id, patch),
+      onDelete: () => deleteNode(id)
+    }),
+    [updateNode, deleteNode]
+  );
+
+  // Инициализация один раз.
   useEffect(() => {
     setNodes(
       seedNames.map((name, index): Node<EntityData> => ({
         id: `n${index}`,
         type: 'entity',
         position: positions[index],
-        data: { name, fields: '', onChange: (patch) => updateNode(`n${index}`, patch) }
+        data: nodeData(`n${index}`, name, '')
       }))
     );
-  }, [setNodes, updateNode]);
+  }, [setNodes, nodeData]);
 
   const onConnect = useCallback(
     (connection: Connection) =>
       setEdges((current) =>
-        addEdge({ ...connection, type: 'relation', data: { cardinality: '1-N', onChange: updateEdge } }, current)
+        addEdge({ ...connection, type: 'relation', data: { cardinality: '1-N', onChange: updateEdge, onDelete: deleteEdge } }, current)
       ),
-    [setEdges, updateEdge]
+    [setEdges, updateEdge, deleteEdge]
   );
 
   const addEntity = () =>
     setNodes((current) => {
-      const id = `n${current.length}`;
-      return [
-        ...current,
-        { id, type: 'entity', position: { x: 500, y: 250 }, data: { name: '', fields: '', onChange: (patch) => updateNode(id, patch) } }
-      ];
+      const id = `n${current.length}-${Date.now()}`;
+      return [...current, { id, type: 'entity', position: { x: 500, y: 250 }, data: nodeData(id, '', '') }];
     });
 
   const reset = () => {
     setEdges([]);
     setResult(null);
     setSolved(false);
-    setNodes((current) => current.map((node) => ({ ...node, data: { ...node.data, fields: '' } })));
+    setNodes(
+      seedNames.map((name, index): Node<EntityData> => ({
+        id: `n${index}`,
+        type: 'entity',
+        position: positions[index],
+        data: nodeData(`n${index}`, name, '')
+      }))
+    );
   };
 
   const check = async () => {
@@ -196,9 +243,20 @@ function ErdCanvas() {
       <div className="space-y-3">
         <Panel title="Задача">
           <p className="text-sm leading-6 text-slate-300">{reservationErdTask}</p>
-          <p className="mt-2 text-xs text-slate-500">
-            Заполни поля каждой сущности (имя: тип), протяни связи между узлами и выбери кардинальность на каждой связи.
-          </p>
+          <div className="mt-3 rounded-lg border border-electric/20 bg-electric/[0.05] p-3">
+            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-electric/80">Что нужно сделать</div>
+            <ol className="list-decimal space-y-1 pl-4 text-xs leading-5 text-slate-300">
+              <li>Заполни поля каждой сущности в формате <span className="font-mono text-slate-200">имя: тип</span> (по одному на строку).</li>
+              <li>Соедини связанные сущности линией.</li>
+              <li>На каждой связи выбери кардинальность: 1-1, 1-N или N-N.</li>
+            </ol>
+          </div>
+          <div className="mt-2 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs leading-5 text-slate-400">
+            <div className="mb-1 font-semibold text-slate-300">Как управлять</div>
+            <div>• Связь: тяни от <b>правого</b> кружка одной сущности к <b>левому</b> кружку другой.</div>
+            <div>• Удалить сущность или связь: кнопка <b>×</b> на ней (или выдели и нажми Delete).</div>
+            <div>• Направление 1-N: тяни от стороны «один» к стороне «много».</div>
+          </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button variant="soft" onClick={addEntity}>
               <Plus size={15} /> Сущность

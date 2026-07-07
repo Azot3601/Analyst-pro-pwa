@@ -6,6 +6,14 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.20',
+    title: 'Удобнее конструкторы: удаление и понятные условия',
+    changes: [
+      { tag: 'Улучшено', text: 'ERD и BPMN: удаляй отдельные узлы и связи кнопкой × (или Delete), а не только «Сбросить всё»', to: '/trainer?domain=erd' },
+      { tag: 'Улучшено', text: 'Явные условия задач и подсказки «как управлять» в ERD, BPMN и Use Case', to: '/trainer?domain=bpmn' }
+    ]
+  },
+  {
     version: 'v0.19',
     title: 'Микроконтент: карточки-контрасты понятий',
     changes: [
