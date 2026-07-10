@@ -19,8 +19,12 @@ const auraByState: Record<SophieState, string> = {
 export function SophieAvatar({ state = 'idle', size = 96 }: { state?: SophieState; size?: number }) {
   const reduced = useAppStore((s) => s.reducedMotion);
   const [imgError, setImgError] = useState(false);
+  // На мобиле не грузим 1.7 МБ PNG ради 84px-аватарки — отдаём лёгкий SVG-портрет.
+  const [isMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches
+  );
 
-  if (imgError) {
+  if (imgError || isMobile) {
     return (
       <div
         className="grid place-items-center rounded-full border-2 border-amber/40 bg-ink/60 shadow-lift"
@@ -49,6 +53,10 @@ export function SophieAvatar({ state = 'idle', size = 96 }: { state?: SophieStat
         <img
           src="/sophie.png"
           alt="Софи, Чтица свитков"
+          loading="lazy"
+          decoding="async"
+          width={size}
+          height={size}
           onError={() => setImgError(true)}
           className="h-full w-full object-cover"
           style={{ objectPosition: '50% 20%' }}

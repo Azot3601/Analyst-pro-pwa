@@ -28,24 +28,35 @@ body {
   /* Деревня Permalith живёт в фоне body (всегда виден за контентом): деревни
      по краям, тёмная вуаль в центре для читаемости, тёплые блики сверху. */
   background-color: #14121e;
+  /* Мобилки/планшеты — только лёгкие градиенты (без 2 МБ картинки и fixed,
+     который лагает при скролле). Полный фон-деревня — только на десктопе. */
   background-image:
     radial-gradient(circle at 12% -4%, rgba(139, 123, 255, 0.16), transparent 32rem),
     radial-gradient(circle at 88% 6%, rgba(255, 206, 106, 0.1), transparent 30rem),
-    linear-gradient(
-      90deg,
-      rgba(20, 18, 30, 0.28) 0%,
-      rgba(20, 18, 30, 0.55) 12%,
-      rgba(20, 18, 30, 0.93) 30%,
-      rgba(20, 18, 30, 0.95) 70%,
-      rgba(20, 18, 30, 0.55) 88%,
-      rgba(20, 18, 30, 0.28) 100%
-    ),
-    linear-gradient(180deg, rgba(20, 18, 30, 0.4) 0%, rgba(20, 18, 30, 0) 20%, rgba(20, 18, 30, 0) 82%, rgba(20, 18, 30, 0.55) 100%),
-    url('/permalith-bg.png');
-  background-size: auto, auto, auto, auto, cover;
-  background-position: center, center, center, center, center;
+    linear-gradient(180deg, rgba(20, 18, 30, 0.4) 0%, rgba(20, 18, 30, 0) 20%, rgba(20, 18, 30, 0) 82%, rgba(20, 18, 30, 0.55) 100%);
   background-repeat: no-repeat;
-  background-attachment: fixed;
+}
+
+@media (min-width: 1024px) {
+  body {
+    background-image:
+      radial-gradient(circle at 12% -4%, rgba(139, 123, 255, 0.16), transparent 32rem),
+      radial-gradient(circle at 88% 6%, rgba(255, 206, 106, 0.1), transparent 30rem),
+      linear-gradient(
+        90deg,
+        rgba(20, 18, 30, 0.28) 0%,
+        rgba(20, 18, 30, 0.55) 12%,
+        rgba(20, 18, 30, 0.93) 30%,
+        rgba(20, 18, 30, 0.95) 70%,
+        rgba(20, 18, 30, 0.55) 88%,
+        rgba(20, 18, 30, 0.28) 100%
+      ),
+      linear-gradient(180deg, rgba(20, 18, 30, 0.4) 0%, rgba(20, 18, 30, 0) 20%, rgba(20, 18, 30, 0) 82%, rgba(20, 18, 30, 0.55) 100%),
+      url('/permalith-bg.png');
+    background-size: auto, auto, auto, auto, cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
 }
 
 /* Бумажное зерно: тончайший шум поверх всего — уходит «плоский цифровой» вид. */

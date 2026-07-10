@@ -51,7 +51,23 @@ export function TrainerPage() {
 
   return (
     <div className="space-y-3">
-      <div className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:px-0">
+      {/* Мобилка: компактный выпадающий список вместо 11 вкладок в 1160px. */}
+      <label className="block lg:hidden">
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Раздел тренажёра</span>
+        <select
+          value={domain}
+          onChange={(event) => setDomain(event.target.value as TrainerDomain)}
+          className="w-full rounded-lg border border-electric/30 bg-graphite px-3 py-2.5 text-sm font-semibold text-slate-100 outline-none"
+        >
+          {domains.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="hidden overflow-x-auto lg:block lg:mx-0 lg:px-0">
         <div
           role="tablist"
           aria-label="Разделы тренажёра"

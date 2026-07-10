@@ -6,6 +6,14 @@ export type Release = { version: string; title: string; changes: Change[] };
 
 export const changelog: Release[] = [
   {
+    version: 'v0.21',
+    title: 'Оптимизация для телефонов',
+    changes: [
+      { tag: 'Улучшено', text: 'Телефоны больше не грузят тяжёлый фон (2 МБ) и портрет Софи (1.7 МБ) — быстрее старт и плавный скролл' },
+      { tag: 'Улучшено', text: 'Разделы тренажёра на мобиле — выпадающий список вместо длинной ленты из 11 вкладок', to: '/trainer' }
+    ]
+  },
+  {
     version: 'v0.20',
     title: 'Удобнее конструкторы: удаление и понятные условия',
     changes: [

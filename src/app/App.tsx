@@ -98,7 +98,7 @@ export function App() {
         </aside>
 
         <div className="lg:pl-72">
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-white/[0.06] bg-ink/70 px-4 backdrop-blur-xl lg:px-8">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-white/[0.06] bg-ink/85 px-4 backdrop-blur-md lg:bg-ink/70 lg:px-8 lg:backdrop-blur-xl">
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-electric/80">
                 PWA · offline-first
@@ -154,7 +154,7 @@ export function App() {
           </main>
         </div>
 
-        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-9 gap-1 border-t border-white/[0.06] bg-graphite/85 px-2 py-2 backdrop-blur-xl lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-9 gap-1 border-t border-white/[0.06] bg-graphite/95 px-2 py-2 backdrop-blur-md lg:hidden">
           {nav.map((item) => {
             const Icon = item.icon;
             return (

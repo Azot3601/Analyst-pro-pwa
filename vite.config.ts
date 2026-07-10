@@ -49,6 +49,9 @@ export default {
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json,wasm}'],
+        // Тяжёлые иллюстрации не кладём в precache (2 МБ фон + 1.7 МБ Софи) —
+        // они грузятся по запросу и кэшируются рантайм-стратегией CacheFirst.
+        globIgnores: ['**/permalith-bg.png', '**/sophie.png'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         runtimeCaching: [
           {
